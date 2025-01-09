@@ -41,7 +41,7 @@ public class UserController {
             throw new NotFoundException("Дата рождения не должна быть пустой и быть больше 09.01.25");
         }
 
-        user.setId(user.getId());
+        user.setId(getNextId());
         posts.put(user.getId(), user);
         return user;
     }
