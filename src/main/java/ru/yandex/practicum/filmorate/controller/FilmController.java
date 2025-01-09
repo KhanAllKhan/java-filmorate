@@ -67,7 +67,6 @@ public class FilmController {
         }
 
         Film oldFilm = films.get(newFilm.getId());
-        oldFilm.setId(getNextId());
         oldFilm.setName(newFilm.getName());
         oldFilm.setDescription(newFilm.getDescription());
         oldFilm.setReleaseDate(newFilm.getReleaseDate());
