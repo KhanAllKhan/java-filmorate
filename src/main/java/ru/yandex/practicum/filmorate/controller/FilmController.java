@@ -16,18 +16,18 @@ import java.util.Map;
 @RequestMapping("/films")
 public class FilmController {
     private static final Logger log = LoggerFactory.getLogger(FilmController.class);
-    private final Map<Long, Film> posts = new HashMap<>();
+    private final Map<Long, Film> films = new HashMap<>();
     private static final LocalDate MINIMUM_DATE = LocalDate.of(1895, 12, 28);  // Минимальная допустимая дата
 
     @GetMapping
     public Collection<Film> findAll() {
         log.info("Получен запрос на получение списка всех фильмов");
-        return posts.values();
+        return films.values();
     }
 
     @PostMapping
     public Film create(@RequestBody Film film) {
-        log.info("Получен запрос на создание фильма: {}");
+        log.info("Получен запрос на создание фильма: {}", film);
         if (film.getName() == null || film.getName().isBlank()) {
             throw new ConditionsNotMetException("Название не может быть пустым");
         }
@@ -41,9 +41,8 @@ public class FilmController {
             throw new ConditionsNotMetException("Продолжительность фильма должна быть положительным числом");
         }
 
-        film.setId(film.getId());
-        film.setReleaseDate(film.getReleaseDate());
-        posts.put(film.getId(), film);
+        film.setId(getNextId());
+        films.put(film.getId(), film);
         return film;
     }
 
@@ -52,7 +51,7 @@ public class FilmController {
         if (newFilm.getId() == null) {
             throw new ConditionsNotMetException("Id должен быть указан");
         }
-        if (!posts.containsKey(newFilm.getId())) {
+        if (!films.containsKey(newFilm.getId())) {
             throw new NotFoundException("Фильм с id = " + newFilm.getId() + " не найден");
         }
         if (newFilm.getName() == null || newFilm.getName().isBlank()) {
@@ -68,7 +67,7 @@ public class FilmController {
             throw new ConditionsNotMetException("Продолжительность фильма должна быть положительным числом");
         }
 
-        Film oldFilm = posts.get(newFilm.getId());
+        Film oldFilm = films.get(newFilm.getId());
         oldFilm.setName(newFilm.getName());
         oldFilm.setDescription(newFilm.getDescription());
         oldFilm.setReleaseDate(newFilm.getReleaseDate());
@@ -77,7 +76,7 @@ public class FilmController {
     }
 
     private long getNextId() {
-        long currentMaxId = posts.keySet()
+        long currentMaxId = films.keySet()
                 .stream()
                 .mapToLong(id -> id)
                 .max()
