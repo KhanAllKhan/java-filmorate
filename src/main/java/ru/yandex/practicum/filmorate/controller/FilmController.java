@@ -40,7 +40,6 @@ public class FilmController {
         if (film.getDuration() <= 0) {
             throw new ConditionsNotMetException("Продолжительность фильма должна быть положительным числом");
         }
-
         film.setId(getNextId());
         films.put(film.getId(), film);
         return film;
