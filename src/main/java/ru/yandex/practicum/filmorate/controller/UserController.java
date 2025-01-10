@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.controller;
 
+import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.*;
@@ -26,21 +27,8 @@ public class UserController {
     }
 
     @PostMapping
-    public User create(@RequestBody User user) {
-        if (user.getEmail() == null || !user.getEmail().contains("@")) {
-            throw new ConditionsNotMetException("Электронная почта не может быть пустой и должна содержать символ @");
-        }
-        if (user.getLogin() == null || user.getLogin().contains(" ")) {
-            throw new ConditionsNotMetException("Логин не может быть пустым и содержать пробелы");
-        }
-        if (user.getName() == null || user.getName().isBlank()) {
-            log.warn("Имя пользователя не указано, используется логин ({}) в качестве имени", user.getLogin());
-            user.setName(user.getLogin());
-        }
-        if (user.getBirthday() == null || user.getBirthday().isAfter(MINIMUM_DATE)) {
-            throw new ConditionsNotMetException("Дата рождения не должна быть пустой и быть больше 09.01.25");
-        }
-
+    public User create(@RequestBody @Valid User user) {
+        validateUser(user);
         user.setId(getNextId());
         users.put(user.getId(), user);
         return user;
@@ -54,22 +42,30 @@ public class UserController {
         if (!users.containsKey(newUser.getId())) {
             throw new NotFoundException("Пользователь с id = " + newUser.getId() + " не найден");
         }
-        if (newUser.getEmail() == null || !newUser.getEmail().contains("@")) {
-            throw new ConditionsNotMetException("Электронная почта не может быть пустой и должна содержать символ @");
-        }
-        if (newUser.getLogin() == null || newUser.getLogin().contains(" ")) {
-            throw new ConditionsNotMetException("Логин не может быть пустым и содержать пробелы");
-        }
-        if (newUser.getBirthday() == null || newUser.getBirthday().isAfter(MINIMUM_DATE)) {
-            throw new ConditionsNotMetException("Дата рождения не должна быть пустой и быть больше 09.01.25");
-        }
 
+        validateUser(newUser);
         User oldUser = users.get(newUser.getId());
         oldUser.setEmail(newUser.getEmail());
         oldUser.setLogin(newUser.getLogin());
         oldUser.setName(newUser.getName());
         oldUser.setBirthday(newUser.getBirthday());
         return oldUser;
+    }
+
+    private void validateUser(User user) {
+        if (user.getEmail() == null || !user.getEmail().contains("@")) {
+            throw new ConditionsNotMetException("Электронная почта не может быть пустой и должна содержать символ @");
+        }
+        if (user.getLogin() == null || user.getLogin().contains(" ")) {
+            throw new ConditionsNotMetException("Логин не может быть пустым и содержать пробелы");
+        }
+        if (user.getBirthday() == null || user.getBirthday().isAfter(MINIMUM_DATE)) {
+            throw new ConditionsNotMetException("Дата рождения не должна быть пустой и быть больше 09.01.25");
+        }
+        if (user.getName() == null || user.getName().isBlank()) {
+            log.warn("Имя пользователя не указано, используется логин ({}) в качестве имени", user.getLogin());
+            user.setName(user.getLogin());
+        }
     }
 
     private long getNextId() {

@@ -8,8 +8,10 @@ import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
 
 import java.time.LocalDate;
-import java.util.Collection;
+
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -20,10 +22,11 @@ public class FilmController {
     private static final LocalDate MINIMUM_DATE = LocalDate.of(1895, 12, 28);  // Минимальная допустимая дата
 
     @GetMapping
-    public Collection<Film> findAll() {
-        log.info("Получен запрос на получение списка всех фильмов");
-        return films.values();
-    }
+    public List<Film> findAll() {
+            log.info("Получен запрос на получение списка всех фильмов");
+            return new ArrayList<>(films.values());
+        }
+
 
     @PostMapping
     public Film create(@RequestBody Film film) {
