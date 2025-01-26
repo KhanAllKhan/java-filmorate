@@ -100,10 +100,10 @@ public class InMemoryUserStorage implements UserStorage {
     }
 
     private void validateUser(User user) {
-        if (user.getEmail() == null || !user.getEmail().contains("@")) {
+        if (user.getEmail() == null || !user.getEmail().matches("^[A-Za-z0-9+_.-]+@(.+)$")) {
             throw new ConditionsNotMetException("Электронная почта не может быть пустой и должна содержать символ @");
         }
-        if (user.getLogin() == null || user.getLogin().contains(" ")) {
+        if (user.getLogin() == null || user.getLogin().isBlank() || user.getLogin().contains(" ")) {
             throw new ConditionsNotMetException("Логин не может быть пустым и содержать пробелы");
         }
         if (user.getBirthday() == null || user.getBirthday().isAfter(MINIMUM_DATE)) {
