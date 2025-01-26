@@ -18,7 +18,7 @@ import java.util.stream.Collectors;
 public class InMemoryUserStorage implements UserStorage {
     private static final Logger log = LoggerFactory.getLogger(UserController.class);
     private final Map<Long, User> users = new HashMap<>();
-    private static final LocalDate MINIMUM_DATE = LocalDate.of(2025, 1, 9); // Минимальная допустимая дата
+     // Минимальная допустимая дата
 
     @Override
     public User create(User user) {
@@ -106,7 +106,7 @@ public class InMemoryUserStorage implements UserStorage {
         if (user.getLogin() == null || user.getLogin().isBlank() || user.getLogin().contains(" ")) {
             throw new ConditionsNotMetException("Логин не может быть пустым и содержать пробелы");
         }
-        if (user.getBirthday() == null || user.getBirthday().isAfter(MINIMUM_DATE)) {
+        if (user.getBirthday() == null || user.getBirthday().isAfter(LocalDate.now())) {
             throw new ConditionsNotMetException("Дата рождения не должна быть пустой и быть больше 09.01.25");
         }
         if (user.getName() == null || user.getName().isBlank()) {

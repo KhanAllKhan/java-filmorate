@@ -8,6 +8,7 @@ import ru.yandex.practicum.filmorate.controller.FilmController;
 import ru.yandex.practicum.filmorate.exception.ConditionsNotMetException;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.User;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -46,25 +47,7 @@ public class InMemoryFilmStorage implements FilmStorage {
 
     @Override
     public Film update(Film newFilm) {
-        if (newFilm.getId() == null) {
-            throw new ConditionsNotMetException("Id должен быть указан");
-        }
-        if (!films.containsKey(newFilm.getId())) {
-            throw new NotFoundException("Фильм с id = " + newFilm.getId() + " не найден");
-        }
-        if (newFilm.getName() == null || newFilm.getName().isBlank()) {
-            throw new ConditionsNotMetException("Название не может быть пустым");
-        }
-        if (newFilm.getDescription().length() > 200) {
-            throw new ConditionsNotMetException("Описание не может быть больше 200 символов");
-        }
-        if (newFilm.getReleaseDate() == null || newFilm.getReleaseDate().isBefore(MINIMUM_DATE)) {
-            throw new ConditionsNotMetException("Дата релиза не может быть раньше 28 декабря 1895 года");
-        }
-        if (newFilm.getDuration() <= 0) {
-            throw new ConditionsNotMetException("Продолжительность фильма должна быть положительным числом");
-        }
-
+        validateUser(newFilm);
         Film oldFilm = films.get(newFilm.getId());
         oldFilm.setName(newFilm.getName());
         oldFilm.setDescription(newFilm.getDescription());
@@ -110,7 +93,26 @@ public class InMemoryFilmStorage implements FilmStorage {
         }
         return films.get(filmId);
     }
-
+    private void validateUser(Film newFilm){
+        if (newFilm.getId() == null) {
+            throw new ConditionsNotMetException("Id должен быть указан");
+        }
+        if (!films.containsKey(newFilm.getId())) {
+            throw new NotFoundException("Фильм с id = " + newFilm.getId() + " не найден");
+        }
+        if (newFilm.getName() == null || newFilm.getName().isBlank()) {
+            throw new ConditionsNotMetException("Название не может быть пустым");
+        }
+        if (newFilm.getDescription().length() > 200) {
+            throw new ConditionsNotMetException("Описание не может быть больше 200 символов");
+        }
+        if (newFilm.getReleaseDate() == null || newFilm.getReleaseDate().isBefore(MINIMUM_DATE)) {
+            throw new ConditionsNotMetException("Дата релиза не может быть раньше 28 декабря 1895 года");
+        }
+        if (newFilm.getDuration() <= 0) {
+            throw new ConditionsNotMetException("Продолжительность фильма должна быть положительным числом");
+        }
+    }
     private long getNextId() {
         long currentMaxId = films.keySet()
                 .stream()

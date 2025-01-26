@@ -1,18 +1,19 @@
 package ru.yandex.practicum.filmorate.Handler;
 
-import jakarta.validation.ValidationException;
+import jakarta.validation.ConstraintViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
+import ru.yandex.practicum.filmorate.exception.ConditionsNotMetException;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 
 @ControllerAdvice
 public class GlobalExceptionHandler {
 
-    @ExceptionHandler(ValidationException.class)
+    @ExceptionHandler(ConstraintViolationException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ErrorResponse handleValidationException(ValidationException ex) {
+    public ErrorResponse handleValidationException(ConstraintViolationException ex) {
         return new ErrorResponse("Ошибка валидации: " + ex.getMessage());
     }
 
@@ -26,6 +27,12 @@ public class GlobalExceptionHandler {
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public ErrorResponse handleException(Exception ex) {
         return new ErrorResponse("Внутренняя ошибка сервера: " + ex.getMessage());
+    }
+
+    @ExceptionHandler(ConditionsNotMetException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ErrorResponse handleConditionsNotMetException(ConditionsNotMetException ex) {
+        return new ErrorResponse("Ошибка валидации: " + ex.getMessage());
     }
 
     private static class ErrorResponse {
