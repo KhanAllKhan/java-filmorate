@@ -5,7 +5,9 @@ import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.ConditionsNotMetException;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
+
 
 import java.time.LocalDate;
 import java.util.List;
@@ -14,6 +16,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class FilmService {
     private final FilmStorage filmStorage;
+    private final UserService userService;
 
     public Film create(Film film) {
         validateFilm(film);
@@ -37,6 +40,7 @@ public class FilmService {
 
     public void addLike(Long filmId, Long userId) {
         Film film = getFilmById(filmId);
+        User user = userService.findById(userId);
         film.getLikes().add(userId);
     }
 
