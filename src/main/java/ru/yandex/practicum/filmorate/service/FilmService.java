@@ -40,7 +40,6 @@ public class FilmService {
 
     public void addLike(Long filmId, Long userId) {
         Film film = getFilmById(filmId);
-        User user = userService.findById(userId);
         film.getLikes().add(userId);
     }
 
