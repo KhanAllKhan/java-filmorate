@@ -8,7 +8,6 @@ import ru.yandex.practicum.filmorate.controller.FilmController;
 import ru.yandex.practicum.filmorate.exception.ConditionsNotMetException;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.model.User;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -93,7 +92,8 @@ public class InMemoryFilmStorage implements FilmStorage {
         }
         return films.get(filmId);
     }
-    private void validateUser(Film newFilm){
+
+    private void validateUser(Film newFilm) {
         if (newFilm.getId() == null) {
             throw new ConditionsNotMetException("Id должен быть указан");
         }
@@ -113,6 +113,7 @@ public class InMemoryFilmStorage implements FilmStorage {
             throw new ConditionsNotMetException("Продолжительность фильма должна быть положительным числом");
         }
     }
+
     private long getNextId() {
         long currentMaxId = films.keySet()
                 .stream()

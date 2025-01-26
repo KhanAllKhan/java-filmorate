@@ -18,7 +18,7 @@ import java.util.stream.Collectors;
 public class InMemoryUserStorage implements UserStorage {
     private static final Logger log = LoggerFactory.getLogger(UserController.class);
     private final Map<Long, User> users = new HashMap<>();
-     // Минимальная допустимая дата
+    // Минимальная допустимая дата
 
     @Override
     public User create(User user) {
