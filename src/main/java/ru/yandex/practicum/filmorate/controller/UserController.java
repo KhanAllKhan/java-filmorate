@@ -53,3 +53,4 @@ public class UserController {
         return userService.getCommonFriends(id, otherId);
     }
 }
+

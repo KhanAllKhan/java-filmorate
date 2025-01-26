@@ -18,12 +18,14 @@ public class UserService {
 
     public User create(User user) {
         validateUser(user);
-        user.setId(getNextId());
         return userStorage.create(user);
     }
 
     public User update(User newUser) {
         validateUser(newUser);
+        if (!userStorage.findById(newUser.getId()).isPresent()) {
+            throw new NotFoundException("Пользователь с id = " + newUser.getId() + " не найден");
+        }
         return userStorage.update(newUser);
     }
 
@@ -85,13 +87,5 @@ public class UserService {
         if (user.getName() == null || user.getName().isBlank()) {
             user.setName(user.getLogin());
         }
-    }
-
-    private long getNextId() {
-        long currentMaxId = userStorage.getAll().stream()
-                .mapToLong(User::getId)
-                .max()
-                .orElse(0);
-        return ++currentMaxId;
     }
 }

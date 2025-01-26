@@ -18,7 +18,7 @@ import java.util.stream.Collectors;
 public class InMemoryUserStorage implements UserStorage {
     private static final Logger log = LoggerFactory.getLogger(UserController.class);
     private final Map<Long, User> users = new HashMap<>();
-    // Минимальная допустимая дата
+    private static final LocalDate MINIMUM_DATE = LocalDate.of(2025, 1, 9); // Минимальная допустимая дата
 
     @Override
     public User create(User user) {
@@ -93,20 +93,18 @@ public class InMemoryUserStorage implements UserStorage {
     }
 
     private User getUserById(Long userId) {
-        if (!users.containsKey(userId)) {
-            throw new NotFoundException("Пользователь с id = " + userId + " не найден");
-        }
-        return users.get(userId);
+        return findById(userId)
+                .orElseThrow(() -> new NotFoundException("Пользователь с id = " + userId + " не найден"));
     }
 
     private void validateUser(User user) {
         if (user.getEmail() == null || !user.getEmail().matches("^[A-Za-z0-9+_.-]+@(.+)$")) {
             throw new ConditionsNotMetException("Электронная почта не может быть пустой и должна содержать символ @");
         }
-        if (user.getLogin() == null || user.getLogin().isBlank() || user.getLogin().contains(" ")) {
+        if (user.getLogin() == null || user.getLogin().contains(" ")) {
             throw new ConditionsNotMetException("Логин не может быть пустым и содержать пробелы");
         }
-        if (user.getBirthday() == null || user.getBirthday().isAfter(LocalDate.now())) {
+        if (user.getBirthday() == null || user.getBirthday().isAfter(MINIMUM_DATE)) {
             throw new ConditionsNotMetException("Дата рождения не должна быть пустой и быть больше 09.01.25");
         }
         if (user.getName() == null || user.getName().isBlank()) {
