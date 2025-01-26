@@ -73,6 +73,7 @@ public class InMemoryUserStorage implements UserStorage {
         friend.getFriends().remove(userId);
     }
 
+
     @Override
     public List<User> getFriends(Long userId) {
         User user = getUserById(userId);
@@ -91,6 +92,7 @@ public class InMemoryUserStorage implements UserStorage {
                 .map(this::getUserById)
                 .collect(Collectors.toList());
     }
+
 
     private User getUserById(Long userId) {
         return findById(userId)
