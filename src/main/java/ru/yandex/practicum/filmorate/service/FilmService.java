@@ -64,7 +64,8 @@ public class FilmService {
         return filmStorage.findById(filmId)
                 .orElseThrow(() -> new NotFoundException("Фильм с id = " + filmId + " не найден"));
     }
-     @NotBlank
+
+    @NotBlank
     private void validateFilm(Film film) {
         if (film.getName() == null || film.getName().isBlank()) {
             throw new ConditionsNotMetException("Название не может быть пустым");
