@@ -59,16 +59,13 @@ public class InMemoryUserStorage implements UserStorage {
 
     @Override
     public void addFriend(Long userId, Long friendId) {
-        if (userId.equals(friendId)) {
-            throw new IllegalArgumentException("Невозможно добавить самого себя в друзья");
-        }
-
         User user = getUserById(userId);
         User friend = getUserById(friendId);
         user.getFriends().add(friendId);
+        friend.getFriends().add(userId);
     }
 
-        @Override
+    @Override
     public void removeFriend(Long userId, Long friendId) {
         User user = getUserById(userId);
         User friend = getUserById(friendId);
