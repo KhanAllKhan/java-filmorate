@@ -1,13 +1,13 @@
 package ru.yandex.practicum.filmorate.service;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import ru.yandex.practicum.filmorate.exception.ConditionsNotMetException;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 
-import java.time.LocalDate;
 import java.util.List;
 
 @Service
@@ -16,16 +16,12 @@ public class FilmService {
     private final FilmStorage filmStorage;
     private final UserService userService;
 
-    private static final LocalDate MINIMUM_DATE = LocalDate.of(1895, 12, 28);
-
-    public Film create(Film film) {
-        validateReleaseDate(film.getReleaseDate());
+    public Film create(@Valid Film film) {
         film.setId(getNextId());
         return filmStorage.create(film);
     }
 
-    public Film update(Film newFilm) {
-        validateReleaseDate(newFilm.getReleaseDate());
+    public Film update(@Valid Film newFilm) {
         return filmStorage.update(newFilm);
     }
 
@@ -40,6 +36,7 @@ public class FilmService {
 
     public void addLike(Long filmId, Long userId) {
         Film film = getFilmById(filmId);
+        User user = userService.findById(userId);
         film.getLikes().add(userId);
     }
 
@@ -69,11 +66,5 @@ public class FilmService {
                 .max()
                 .orElse(0);
         return ++currentMaxId;
-    }
-
-    private void validateReleaseDate(LocalDate releaseDate) {
-        if (releaseDate == null || releaseDate.isBefore(MINIMUM_DATE)) {
-            throw new ConditionsNotMetException("Дата релиза не может быть раньше 28 декабря 1895 года");
-        }
     }
 }
