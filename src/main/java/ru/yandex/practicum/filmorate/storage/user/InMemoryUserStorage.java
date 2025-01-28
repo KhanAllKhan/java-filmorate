@@ -1,13 +1,14 @@
 package ru.yandex.practicum.filmorate.storage.user;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
-import ru.yandex.practicum.filmorate.exception.ConditionsNotMetException;
+
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
 
-import java.time.LocalDate;
+
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -16,27 +17,21 @@ import java.util.stream.Collectors;
 @Component
 public class InMemoryUserStorage implements UserStorage {
     private final Map<Long, User> users = new HashMap<>();
-    private static final LocalDate MINIMUM_DATE = LocalDate.of(2025, 1, 9); // Минимальная допустимая дата
 
     @Override
-    public User create(User user) {
-        validateUser(user);
+    public User create(@Valid User user) {
+        log.info("Получен запрос на создание пользователя: {}", user);
         user.setId(getNextId());
         users.put(user.getId(), user);
         return user;
     }
 
     @Override
-    public User update(User newUser) {
-        if (newUser.getId() == null) {
-            throw new ConditionsNotMetException("Id должен быть указан");
-        }
-        if (!users.containsKey(newUser.getId())) {
+    public User update(@Valid User newUser) {
+        User oldUser = users.get(newUser.getId());
+        if (oldUser == null) {
             throw new NotFoundException("Пользователь с id = " + newUser.getId() + " не найден");
         }
-
-        validateUser(newUser);
-        User oldUser = users.get(newUser.getId());
         oldUser.setEmail(newUser.getEmail());
         oldUser.setLogin(newUser.getLogin());
         oldUser.setName(newUser.getName());
@@ -57,6 +52,9 @@ public class InMemoryUserStorage implements UserStorage {
 
     @Override
     public void addFriend(Long userId, Long friendId) {
+        if (userId.equals(friendId)) {
+            throw new IllegalArgumentException("Невозможно добавить самого себя в друзья");
+        }
         User user = getUserById(userId);
         User friend = getUserById(friendId);
         user.getFriends().add(friendId);
@@ -70,7 +68,6 @@ public class InMemoryUserStorage implements UserStorage {
         user.getFriends().remove(friendId);
         friend.getFriends().remove(userId);
     }
-
 
     @Override
     public List<User> getFriends(Long userId) {
@@ -91,31 +88,10 @@ public class InMemoryUserStorage implements UserStorage {
                 .collect(Collectors.toList());
     }
 
-
     private User getUserById(Long userId) {
         return findById(userId)
                 .orElseThrow(() -> new NotFoundException("Пользователь с id = " + userId + " не найден"));
     }
-
-    private void validateUser(User user) {
-        if (user.getEmail() == null || !user.getEmail().matches("^[A-Za-z0-9+_.-]+@(.+)$")) {
-            log.error("Ошибка валидации: Электронная почта не может быть пустой и должна содержать символ @");
-            throw new ConditionsNotMetException("Электронная почта не может быть пустой и должна содержать символ @");
-        }
-        if (user.getLogin() == null || user.getLogin().isBlank() || user.getLogin().contains(" ")) {
-            log.error("Ошибка валидации: Логин не может быть пустым и содержать пробелы");
-            throw new ConditionsNotMetException("Логин не может быть пустым и содержать пробелы");
-        }
-        if (user.getBirthday() == null || user.getBirthday().isAfter(LocalDate.now())) {
-            log.error("Ошибка валидации: Дата рождения не должна быть пустой и быть в будущем");
-            throw new ConditionsNotMetException("Дата рождения не должна быть пустой и быть в будущем");
-        }
-        if (user.getName() == null || user.getName().isBlank()) {
-            log.warn("Имя пользователя не указано, используется логин ({}) в качестве имени", user.getLogin());
-            user.setName(user.getLogin());
-        }
-    }
-
 
     private long getNextId() {
         long currentMaxId = users.keySet()
@@ -126,4 +102,3 @@ public class InMemoryUserStorage implements UserStorage {
         return ++currentMaxId;
     }
 }
-
