@@ -18,7 +18,7 @@ public class InMemoryFilmStorage implements FilmStorage {
     private final Map<Long, Film> films = new HashMap<>();
 
     @Override
-    public Film create(@Valid Film film) {
+    public Film create(Film film) {
         log.info("Получен запрос на создание фильма: {}", film);
         film.setId(getNextId());
         films.put(film.getId(), film);
@@ -26,7 +26,7 @@ public class InMemoryFilmStorage implements FilmStorage {
     }
 
     @Override
-    public Film update(@Valid Film newFilm) {
+    public Film update(Film newFilm) {
         Film oldFilm = films.get(newFilm.getId());
         if (oldFilm == null) {
             throw new NotFoundException("Фильм с id = " + newFilm.getId() + " не найден");

@@ -1,6 +1,5 @@
 package ru.yandex.practicum.filmorate.service;
 
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
@@ -16,12 +15,12 @@ public class FilmService {
     private final FilmStorage filmStorage;
     private final UserService userService;
 
-    public Film create(@Valid Film film) {
+    public Film create(Film film) {
         film.setId(getNextId());
         return filmStorage.create(film);
     }
 
-    public Film update(@Valid Film newFilm) {
+    public Film update(Film newFilm) {
         return filmStorage.update(newFilm);
     }
 

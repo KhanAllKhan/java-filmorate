@@ -19,7 +19,7 @@ public class InMemoryUserStorage implements UserStorage {
     private final Map<Long, User> users = new HashMap<>();
 
     @Override
-    public User create(@Valid User user) {
+    public User create(User user) {
         log.info("Получен запрос на создание пользователя: {}", user);
         user.setId(getNextId());
         users.put(user.getId(), user);
@@ -27,7 +27,7 @@ public class InMemoryUserStorage implements UserStorage {
     }
 
     @Override
-    public User update(@Valid User newUser) {
+    public User update(User newUser) {
         User oldUser = users.get(newUser.getId());
         if (oldUser == null) {
             throw new NotFoundException("Пользователь с id = " + newUser.getId() + " не найден");

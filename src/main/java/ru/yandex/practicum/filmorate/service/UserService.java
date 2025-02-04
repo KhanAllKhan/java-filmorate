@@ -2,6 +2,7 @@ package ru.yandex.practicum.filmorate.service;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -15,15 +16,15 @@ import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class UserService {
     private final UserStorage userStorage;
-    private static final Logger log = LoggerFactory.getLogger(UserController.class);
 
-    public User create(@Valid User user) {
+    public User create(User user) {
         return userStorage.create(user);
     }
 
-    public User update(@Valid User newUser) {
+    public User update(User newUser) {
         if (!userStorage.findById(newUser.getId()).isPresent()) {
             throw new NotFoundException("Пользователь с id = " + newUser.getId() + " не найден");
         }

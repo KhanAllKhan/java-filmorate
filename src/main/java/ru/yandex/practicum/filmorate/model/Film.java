@@ -1,6 +1,5 @@
 package ru.yandex.practicum.filmorate.model;
 
-import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.PositiveOrZero;
 import jakarta.validation.constraints.Size;
@@ -12,7 +11,6 @@ import java.util.HashSet;
 import java.util.Set;
 
 @Data
-@Valid
 public class Film {
     private Long id;
 
