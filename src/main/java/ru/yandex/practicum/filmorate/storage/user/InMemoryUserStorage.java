@@ -3,10 +3,9 @@ package ru.yandex.practicum.filmorate.storage.user;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
-
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
+import ru.yandex.practicum.filmorate.model.FriendshipStatus;
 import ru.yandex.practicum.filmorate.model.User;
-
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -58,6 +57,8 @@ public class InMemoryUserStorage implements UserStorage {
         User friend = getUserById(friendId);
         user.getFriends().add(friendId);
         friend.getFriends().add(userId);
+        user.getFriendshipStatuses().put(friendId, FriendshipStatus.NO);
+        friend.getFriendshipStatuses().put(userId, FriendshipStatus.NO);
     }
 
     @Override
@@ -66,6 +67,8 @@ public class InMemoryUserStorage implements UserStorage {
         User friend = getUserById(friendId);
         user.getFriends().remove(friendId);
         friend.getFriends().remove(userId);
+        user.getFriendshipStatuses().remove(friendId);
+        friend.getFriendshipStatuses().remove(userId);
     }
 
     @Override
@@ -85,6 +88,18 @@ public class InMemoryUserStorage implements UserStorage {
         return commonFriendsIds.stream()
                 .map(this::getUserById)
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public void confirmFriend(Long userId, Long friendId) {
+        User user = getUserById(userId);
+        User friend = getUserById(friendId);
+        if (user.getFriends().contains(friendId) && friend.getFriends().contains(userId)) {
+            user.getFriendshipStatuses().put(friendId, FriendshipStatus.YES);
+            friend.getFriendshipStatuses().put(userId, FriendshipStatus.YES);
+        } else {
+            throw new NotFoundException("Запрос на дружбу не найден");
+        }
     }
 
     private User getUserById(Long userId) {
