@@ -71,6 +71,10 @@ public class UserService {
                 .toList();
     }
 
+    public void confirmFriend(Long userId, Long friendId) {
+        userStorage.confirmFriend(userId, friendId);
+    }
+
     private User getUserById(Long userId) {
         return userStorage.findById(userId)
                 .orElseThrow(() -> new NotFoundException("Пользователь с id = " + userId + " не найден"));

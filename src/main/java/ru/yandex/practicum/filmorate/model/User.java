@@ -6,7 +6,9 @@ import jakarta.validation.constraints.PastOrPresent;
 import lombok.Data;
 
 import java.time.LocalDate;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 @Data
@@ -26,4 +28,5 @@ public class User {
     private LocalDate birthday;
 
     private final Set<Long> friends = new HashSet<>();
+    private Map<Long, FriendshipStatus> friendshipStatuses = new HashMap<>();
 }
