@@ -84,4 +84,5 @@ public class UserDbStorage implements UserStorage {
         String sql = "UPDATE friends SET status = 'CONFIRMED' WHERE user_id = ? AND friend_id = ?";
         jdbcTemplate.update(sql, userId, friendId);
     }
+    //
 }
