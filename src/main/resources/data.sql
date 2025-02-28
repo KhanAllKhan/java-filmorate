@@ -1,3 +1,4 @@
+//
 INSERT INTO users (email, login, name, birthday) VALUES
 ('john.doe@example.com', 'johndoe', 'John Doe', '1990-01-01'),
 ('jane.doe@example.com', 'janedoe', 'Jane Doe', '1992-02-02');
