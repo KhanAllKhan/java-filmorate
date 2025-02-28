@@ -29,8 +29,10 @@ public class Film {
     private int duration;
 
     private Set<Long> likes = new HashSet<>();
+
     @NotNull(message = "Жанр не может быть пустым")
     private Set<Genre> genres = new HashSet<>();
+
     @NotNull(message = "Рейтинг не должен быть пустым")
     private MpaRating mpaRating;
 }
