@@ -43,8 +43,8 @@ public class UserService {
 
     public void addFriend(Long userId, Long friendId) {
         log.info("Добавление в друзья: пользователь {} добавляет {}", userId, friendId);
-        if (userId.equals(friendId)) {
-            throw new IllegalArgumentException("Невозможно добавить самого себя в друзья");
+        if (!userStorage.findById(userId).isPresent() || !userStorage.findById(friendId).isPresent()) {
+            throw new NotFoundException("Один из пользователей не существует");
         }
         userStorage.addFriend(userId, friendId);
     }
