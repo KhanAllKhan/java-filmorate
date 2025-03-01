@@ -53,6 +53,7 @@ public class UserService {
         log.info("Удаление из друзей: пользователь {} удаляет {}", userId, friendId);
         userStorage.removeFriend(userId, friendId);
     }
+
     public List<User> getFriends(Long userId) {
         log.info("Получение списка друзей пользователя с id={}", userId);
         List<User> friends = userStorage.getFriends(userId);
