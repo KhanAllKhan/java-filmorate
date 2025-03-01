@@ -14,7 +14,7 @@ import java.util.List;
 @RequiredArgsConstructor
 @Slf4j
 public class UserService {
-    @Qualifier("UserDbStorage")
+    @Qualifier("userDbStorage")
     private final UserStorage userStorage;
 
     public User create(User user) {

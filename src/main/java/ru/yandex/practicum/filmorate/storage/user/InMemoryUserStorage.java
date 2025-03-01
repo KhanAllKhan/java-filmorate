@@ -13,7 +13,7 @@ import java.util.stream.Collectors;
 //
 @Slf4j
 @RequiredArgsConstructor
-@Component
+
 public class InMemoryUserStorage implements UserStorage {
     private final Map<Long, User> users = new HashMap<>();
 
