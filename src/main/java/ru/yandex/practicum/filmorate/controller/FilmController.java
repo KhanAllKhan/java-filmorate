@@ -42,22 +42,19 @@ public class FilmController {
 
     @PutMapping("/{id}/like/{userId}")
     public void addLike(@PathVariable Long id, @PathVariable Long userId) {
-        log.info("Получен запрос на добавление лайка: пользователь {} ставит лайк фильму {}", userId, id);
+        log.info("Пользователь {} ставит лайк фильму {}", userId, id);
         filmService.addLike(id, userId);
     }
 
     @DeleteMapping("/{id}/like/{userId}")
     public void removeLike(@PathVariable Long id, @PathVariable Long userId) {
-        log.info("Получен запрос на удаление лайка: пользователь {} удаляет лайк с фильма {}", userId, id);
+        log.info("Пользователь {} удаляет лайк с фильма {}", userId, id);
         filmService.removeLike(id, userId);
     }
 
     @GetMapping("/popular")
     public List<Film> getPopularFilms(@RequestParam(defaultValue = "10") int count) {
         log.info("Получен запрос на получение {} популярных фильмов", count);
-        if (count > 100) {
-            throw new IllegalArgumentException("Параметр count не может превышать 100");
-        }
         return filmService.getPopularFilms(count);
     }
 }

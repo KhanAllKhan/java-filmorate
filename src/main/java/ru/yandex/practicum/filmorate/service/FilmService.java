@@ -14,7 +14,7 @@ import java.util.List;
 @RequiredArgsConstructor
 @Slf4j
 public class FilmService {
-    @Qualifier("FilmDbStorage")
+    @Qualifier("filmDbStorage")
     private final FilmStorage filmStorage;
 
     public Film create(Film film) {
