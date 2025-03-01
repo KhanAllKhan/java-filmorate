@@ -1,5 +1,7 @@
 package ru.yandex.practicum.filmorate.storage.user;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Primary;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -14,6 +16,7 @@ import java.util.Optional;
 @Primary
 @Qualifier("UserDbStorage")
 public class UserDbStorage implements UserStorage {
+    private static final Logger log = LoggerFactory.getLogger(UserDbStorage.class);
     private final JdbcTemplate jdbcTemplate;
 
     public UserDbStorage(JdbcTemplate jdbcTemplate) {
@@ -64,9 +67,12 @@ public class UserDbStorage implements UserStorage {
 
     @Override
     public List<User> getFriends(Long userId) {
-        String sql = "SELECT u.* FROM users u JOIN friends f ON u.id = f.friend_id WHERE f.user_id = ?";
-        return jdbcTemplate.query(sql, new UserRowMapper(), userId);
+        String sql = "SELECT u.* FROM users u JOIN friends f ON u.id = f.friend_id WHERE f.user_id = ? AND f.status = 'CONFIRMED'";
+        List<User> friends = jdbcTemplate.query(sql, new UserRowMapper(), userId);
+        log.info("Количество найденных друзей для пользователя с id={}: {}", userId, friends.size());
+        return friends;
     }
+
 
     @Override
     public List<User> getCommonFriends(Long userId, Long otherUserId) {

@@ -53,10 +53,14 @@ public class UserService {
         log.info("Удаление из друзей: пользователь {} удаляет {}", userId, friendId);
         userStorage.removeFriend(userId, friendId);
     }
-
     public List<User> getFriends(Long userId) {
         log.info("Получение списка друзей пользователя с id={}", userId);
-        return userStorage.getFriends(userId);
+        List<User> friends = userStorage.getFriends(userId);
+        if (friends.isEmpty()) {
+            throw new NotFoundException("У пользователя с id = " + userId + " нет друзей");
+        }
+        log.info("Количество найденных друзей: {}", friends.size());
+        return friends;
     }
 
     public List<User> getCommonFriends(Long userId, Long otherUserId) {
