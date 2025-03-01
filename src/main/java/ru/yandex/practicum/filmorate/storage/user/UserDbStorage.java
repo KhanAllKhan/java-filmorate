@@ -64,10 +64,9 @@ public class UserDbStorage implements UserStorage {
 
     @Override
     public List<User> getFriends(Long userId) {
-        String sql = "SELECT u.* FROM users u JOIN friends f ON u.id = f.friend_id WHERE f.user_id = ? AND f.status = 'CONFIRMED'";
+        String sql = "SELECT u.* FROM users u JOIN friends f ON u.id = f.friend_id WHERE f.user_id = ?";
         return jdbcTemplate.query(sql, new UserRowMapper(), userId);
     }
-
 
     @Override
     public List<User> getCommonFriends(Long userId, Long otherUserId) {
