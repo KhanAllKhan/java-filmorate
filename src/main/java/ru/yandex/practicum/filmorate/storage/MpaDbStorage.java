@@ -29,6 +29,9 @@ public class MpaDbStorage implements MpaStorage {
     }
 
     private MpaRating mapRowToMpa(ResultSet rs, int rowNum) throws SQLException {
-        return MpaRating.valueOf(rs.getString("name").toUpperCase());
+        return new MpaRating(
+                rs.getLong("id"),       // ID рейтинга из базы данных
+                rs.getString("name")    // Название рейтинга (например, "PG-13")
+        );
     }
 }

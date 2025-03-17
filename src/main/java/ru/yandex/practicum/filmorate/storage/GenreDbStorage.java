@@ -29,7 +29,10 @@ public class GenreDbStorage implements GenreStorage {
     }
 
     private Genre mapRowToGenre(ResultSet rs, int rowNum) throws SQLException {
-        return Genre.valueOf(rs.getString("name").toUpperCase());
+        return new Genre(
+                rs.getLong("id"),       // Получаем ID жанра из результата
+                rs.getString("name")    // Получаем имя жанра
+        );
     }
 }
 
