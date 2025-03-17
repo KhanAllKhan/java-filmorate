@@ -59,3 +59,8 @@ CREATE TABLE IF NOT EXISTS likes (
     FOREIGN KEY (film_id) REFERENCES films(id),
     FOREIGN KEY (user_id) REFERENCES users(id)
 );
+
+CREATE TABLE IF NOT EXISTS friendship_status (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(50) NOT NULL
+);
