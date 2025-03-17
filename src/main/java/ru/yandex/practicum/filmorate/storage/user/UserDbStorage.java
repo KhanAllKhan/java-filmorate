@@ -1,94 +1,54 @@
 package ru.yandex.practicum.filmorate.storage.user;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.context.annotation.Primary;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
-import ru.yandex.practicum.filmorate.mapper.UserRowMapper;
+import ru.yandex.practicum.filmorate.mapper.UserWithStatusRowMapper;
 import ru.yandex.practicum.filmorate.model.User;
 
 import java.util.List;
-import java.util.Optional;
 
 @Component
-@Primary
-@Qualifier("UserDbStorage")
-public class UserDbStorage implements UserStorage {
-    private static final Logger log = LoggerFactory.getLogger(UserDbStorage.class);
+public class UserDbStorage {
+
     private final JdbcTemplate jdbcTemplate;
 
     public UserDbStorage(JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
     }
 
-    @Override
-    public User create(User user) {
-        String sql = "INSERT INTO users (email, login, name, birthday) VALUES (?, ?, ?, ?)";
-        jdbcTemplate.update(sql, user.getEmail(), user.getLogin(), user.getName(), user.getBirthday());
-        String queryId = "SELECT id FROM users WHERE email = ?";
-        Long id = jdbcTemplate.queryForObject(queryId, Long.class, user.getEmail());
-        user.setId(id);
-        return user;
+    /**
+     * Получение друзей пользователя со статусами дружбы.
+     */
+    public List<User> getFriendsWithStatus(Long userId) {
+        String sql = "SELECT u.id, u.email, u.login, u.name, u.birthday, fs.name AS status " +
+                "FROM friends f " +
+                "JOIN users u ON f.friend_id = u.id " +
+                "JOIN friendship_status fs ON f.status_id = fs.id " +
+                "WHERE f.user_id = ?";
+        return jdbcTemplate.query(sql, new UserWithStatusRowMapper(), userId);
     }
 
-    @Override
-    public User update(User user) {
-        String sql = "UPDATE users SET email = ?, login = ?, name = ?, birthday = ? WHERE id = ?";
-        jdbcTemplate.update(sql, user.getEmail(), user.getLogin(), user.getName(), user.getBirthday(), user.getId());
-        return user;
+    /**
+     * Добавление друга пользователю с указанным статусом дружбы.
+     */
+    public void addFriend(Long userId, Long friendId, Long statusId) {
+        String sql = "INSERT INTO friends (user_id, friend_id, status_id) VALUES (?, ?, ?)";
+        jdbcTemplate.update(sql, userId, friendId, statusId);
     }
 
-    @Override
-    public List<User> getAll() {
-        String sql = "SELECT * FROM users";
-        return jdbcTemplate.query(sql, new UserRowMapper());
+    /**
+     * Обновление статуса дружбы.
+     */
+    public void updateFriendshipStatus(Long userId, Long friendId, Long statusId) {
+        String sql = "UPDATE friends SET status_id = ? WHERE user_id = ? AND friend_id = ?";
+        jdbcTemplate.update(sql, statusId, userId, friendId);
     }
 
-    @Override
-    public Optional<User> findById(Long id) {
-        String sql = "SELECT * FROM users WHERE id = ?";
-        List<User> users = jdbcTemplate.query(sql, new UserRowMapper(), id);
-        return users.isEmpty() ? Optional.empty() : Optional.of(users.get(0));
-    }
-
-    @Override
-    public void addFriend(Long userId, Long friendId) {
-        String sql = "INSERT INTO friends (user_id, friend_id, status) VALUES (?, ?, 'PENDING')";
-        jdbcTemplate.update(sql, userId, friendId);
-    }
-
-    @Override
+    /**
+     * Удаление друга.
+     */
     public void removeFriend(Long userId, Long friendId) {
         String sql = "DELETE FROM friends WHERE user_id = ? AND friend_id = ?";
         jdbcTemplate.update(sql, userId, friendId);
     }
-
-    @Override
-    public List<User> getFriends(Long userId) {
-        String sql = "SELECT u.* FROM users u JOIN friends f ON u.id = f.friend_id WHERE f.user_id = ? AND f.status = 'CONFIRMED'";
-        List<User> friends = jdbcTemplate.query(sql, new UserRowMapper(), userId);
-        log.info("Количество найденных друзей для пользователя с id={}: {}", userId, friends.size());
-        return friends;
-    }
-
-
-    @Override
-    public List<User> getCommonFriends(Long userId, Long otherUserId) {
-        String sql = """
-                SELECT u.* FROM users u
-                JOIN friends f1 ON u.id = f1.friend_id
-                JOIN friends f2 ON u.id = f2.friend_id
-                WHERE f1.user_id = ? AND f2.user_id = ?
-                """;
-        return jdbcTemplate.query(sql, new UserRowMapper(), userId, otherUserId);
-    }
-
-    @Override
-    public void confirmFriend(Long userId, Long friendId) {
-        String sql = "UPDATE friends SET status = 'CONFIRMED' WHERE user_id = ? AND friend_id = ?";
-        jdbcTemplate.update(sql, userId, friendId);
-    }
-    //
 }

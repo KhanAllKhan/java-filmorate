@@ -7,7 +7,6 @@ import lombok.Data;
 
 import java.time.LocalDate;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -27,6 +26,34 @@ public class User {
     @PastOrPresent(message = "Дата рождения не может быть в будущем")
     private LocalDate birthday;
 
-    private final Set<Long> friends = new HashSet<>();
-    private Map<Long, FriendshipStatus> friendshipStatuses = new HashMap<>();
+    private final Map<Long, FriendshipStatus> friendshipStatuses = new HashMap<>();
+
+    // Поле для статуса дружбы (опционально, используется только при получении друзей)
+    private String status;
+
+    public void addFriend(Long friendId, FriendshipStatus status) {
+        friendshipStatuses.put(friendId, status);
+    }
+
+    public void updateFriendshipStatus(Long friendId, FriendshipStatus newStatus) {
+        if (friendshipStatuses.containsKey(friendId)) {
+            friendshipStatuses.put(friendId, newStatus);
+        }
+    }
+
+    public void removeFriend(Long friendId) {
+        friendshipStatuses.remove(friendId);
+    }
+
+    public FriendshipStatus getFriendshipStatus(Long friendId) {
+        return friendshipStatuses.get(friendId);
+    }
+
+    public Set<Long> getAllFriends() {
+        return friendshipStatuses.keySet();
+    }
+
+    public String getName() {
+        return (name == null || name.isBlank()) ? login : name;
+    }
 }

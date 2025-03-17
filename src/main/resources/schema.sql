@@ -45,10 +45,13 @@ CREATE TABLE IF NOT EXISTS film_genres (
 CREATE TABLE IF NOT EXISTS friends (
     user_id BIGINT NOT NULL,
     friend_id BIGINT NOT NULL,
-    status VARCHAR(10),
+    status_id BIGINT NOT NULL,
+    PRIMARY KEY (user_id, friend_id),
     FOREIGN KEY (user_id) REFERENCES users(id),
-    FOREIGN KEY (friend_id) REFERENCES users(id)
+    FOREIGN KEY (friend_id) REFERENCES users(id),
+    FOREIGN KEY (status_id) REFERENCES friendship_status(id)
 );
+
 
 CREATE TABLE IF NOT EXISTS likes (
     film_id BIGINT NOT NULL,
