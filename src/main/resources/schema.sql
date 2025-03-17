@@ -5,6 +5,7 @@ DROP TABLE IF EXISTS friends;
 DROP TABLE IF EXISTS films;
 DROP TABLE IF EXISTS mpa;
 DROP TABLE IF EXISTS users;
+DROP TABLE IF EXISTS friendship_status;
 
 
 CREATE TABLE IF NOT EXISTS users (
@@ -42,6 +43,11 @@ CREATE TABLE IF NOT EXISTS film_genres (
     FOREIGN KEY (genre_id) REFERENCES genres(id)
 );
 
+CREATE TABLE IF NOT EXISTS friendship_status (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(50) NOT NULL
+);
+
 CREATE TABLE IF NOT EXISTS friends (
     user_id BIGINT NOT NULL,
     friend_id BIGINT NOT NULL,
@@ -60,7 +66,4 @@ CREATE TABLE IF NOT EXISTS likes (
     FOREIGN KEY (user_id) REFERENCES users(id)
 );
 
-CREATE TABLE IF NOT EXISTS friendship_status (
-    id BIGINT AUTO_INCREMENT PRIMARY KEY,
-    name VARCHAR(50) NOT NULL
-);
+
