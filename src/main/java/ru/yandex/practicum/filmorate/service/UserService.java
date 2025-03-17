@@ -1,71 +1,79 @@
 package ru.yandex.practicum.filmorate.service;
 
-import lombok.RequiredArgsConstructor;
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
-import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
-@Service
-@RequiredArgsConstructor
 @Slf4j
+@Service
+@AllArgsConstructor
 public class UserService {
-    @Qualifier("UserDbStorage")
     private final UserStorage userStorage;
 
-    public User create(User user) {
-        log.info("Создание нового пользователя: {}", user);
-        return userStorage.create(user);
+    public Collection<User> getAllUsers() {
+        return userStorage.getAllUsers();
     }
 
-    public User update(User newUser) {
-        log.info("Обновление данных пользователя с id={}: {}", newUser.getId(), newUser);
-        if (!userStorage.findById(newUser.getId()).isPresent()) {
-            throw new NotFoundException("Пользователь с id = " + newUser.getId() + " не найден");
-        }
-        return userStorage.update(newUser);
+    public Collection<User> findFriends(Long userId) {
+        return getUserById(userId).getFriends().stream()
+                .map(this::getUserById)
+                .collect(Collectors.toList());
     }
 
-    public List<User> getAll() {
-        log.info("Получение списка всех пользователей");
-        return userStorage.getAll();
+    public Collection<User> findCommonFriends(Long userId, Long friendId) {
+        log.info("Находим общих друзей у пользователей с id = " + userId + " и id = " + friendId);
+        return userStorage.findCommonFriends(userId, friendId);
     }
 
-    public User findById(Long id) {
-        log.info("Получение пользователя с id={}", id);
-        return userStorage.findById(id)
-                .orElseThrow(() -> new NotFoundException("Пользователь с id = " + id + " не найден"));
+    public User addUser(User user) {
+        return userStorage.addUser(user);
     }
 
-    public void addFriend(Long userId, Long friendId) {
-        log.info("Добавление в друзья: пользователь {} добавляет {}", userId, friendId);
+    public User addFriend(Long userId, Long friendId) {
         if (userId.equals(friendId)) {
-            throw new IllegalArgumentException("Невозможно добавить самого себя в друзья");
+            throw new IllegalArgumentException("Нельзя добавить в друзья самого себя");
         }
-        userStorage.addFriend(userId, friendId);
+
+        userStorage.getUserById(userId);
+        userStorage.getUserById(friendId);
+
+        User user = getUserById(userId);
+        user.getFriends().add(friendId);
+
+        log.info("Пользователи с id = " + userId + " добавил в друзья пользователя с id = " + friendId);
+        log.info("user: " + user.getFriends());
+
+        return userStorage.updateUser(user);
     }
 
-    public void removeFriend(Long userId, Long friendId) {
-        log.info("Удаление из друзей: пользователь {} удаляет {}", userId, friendId);
+    public User updateUser(User newUser) {
+        return userStorage.updateUser(newUser);
+    }
+
+    public User deleteFriend(Long userId, Long friendId) {
+        User user = getUserById(userId);
+        user.getFriends().remove(friendId);
+
+        User friend = getUserById(friendId);
+        friend.getFriends().remove(userId);
+
+        log.info("Пользователи с id = " + userId + " и id = " + friendId + " больше не являются друзьями");
+
         userStorage.removeFriend(userId, friendId);
+
+        userStorage.updateUser(user);
+        userStorage.updateUser(friend);
+
+        return user;
     }
 
-    public List<User> getFriends(Long userId) {
-        log.info("Получение списка друзей пользователя с id={}", userId);
-        return userStorage.getFriends(userId);
+    private User getUserById(Long userId) {
+        return userStorage.getUserById(userId);
     }
 
-    public List<User> getCommonFriends(Long userId, Long otherUserId) {
-        log.info("Получение общих друзей пользователей {} и {}", userId, otherUserId);
-        return userStorage.getCommonFriends(userId, otherUserId);
-    }
-
-    public void confirmFriend(Long userId, Long friendId) {
-        log.info("Подтверждение дружбы между пользователями {} и {}", userId, friendId);
-        userStorage.confirmFriend(userId, friendId);
-    }
 }

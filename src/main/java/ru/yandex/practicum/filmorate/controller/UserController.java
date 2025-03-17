@@ -1,72 +1,60 @@
 package ru.yandex.practicum.filmorate.controller;
 
 import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import lombok.AllArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.UserService;
 
-import java.util.List;
+import java.util.*;
 
-@Slf4j
 @RestController
 @RequestMapping("/users")
-@RequiredArgsConstructor
+@AllArgsConstructor
 public class UserController {
     private final UserService userService;
 
     @GetMapping
-    public List<User> getAllUsers() {
-        log.info("Получен запрос на получение всех пользователей");
-        return userService.getAll();
+    @ResponseStatus(HttpStatus.OK)
+    public Collection<User> getAllUsers() {
+        return userService.getAllUsers();
     }
 
-    @GetMapping("/{id}")
-    public User getUserById(@PathVariable Long id) {
-        log.info("Получен запрос на получение пользователя с id={}", id);
-        return userService.findById(id);
+    @GetMapping("/{userId}/friends")
+    @ResponseStatus(HttpStatus.OK)
+    public Collection<User> getFriends(@PathVariable Long userId) {
+        return userService.findFriends(userId);
+    }
+
+    @GetMapping("/{userId}/friends/common/{friendId}")
+    @ResponseStatus(HttpStatus.OK)
+    public Collection<User> getCommonFriends(@PathVariable Long userId, @PathVariable Long friendId) {
+        return userService.findCommonFriends(userId, friendId);
     }
 
     @PostMapping
-    public User createUser(@RequestBody @Valid User user) {
-        log.info("Получен запрос на создание нового пользователя: {}", user);
-        return userService.create(user);
+    @ResponseStatus(HttpStatus.OK)
+    public User addUser(@Valid @RequestBody User user) {
+        return userService.addUser(user);
     }
 
     @PutMapping
-    public User updateUser(@RequestBody @Valid User user) {
-        log.info("Получен запрос на обновление пользователя с id={}: {}", user.getId(), user);
-        return userService.update(user);
+    @ResponseStatus(HttpStatus.OK)
+    public User updateUser(@Valid @RequestBody User newUser) {
+        return userService.updateUser(newUser);
     }
 
-    @PutMapping("/{id}/friends/{friendId}")
-    public void addFriend(@PathVariable Long id, @PathVariable Long friendId) {
-        log.info("Получен запрос на добавление друга: пользователь {} добавляет {}", id, friendId);
-        userService.addFriend(id, friendId);
+    @PutMapping("/{userId}/friends/{friendId}")
+    @ResponseStatus(HttpStatus.OK)
+    public User addFriend(@PathVariable Long userId, @PathVariable Long friendId) {
+        return userService.addFriend(userId, friendId);
     }
 
-    @DeleteMapping("/{id}/friends/{friendId}")
-    public void removeFriend(@PathVariable Long id, @PathVariable Long friendId) {
-        log.info("Получен запрос на удаление друга: пользователь {} удаляет {}", id, friendId);
-        userService.removeFriend(id, friendId);
+    @DeleteMapping("/{userId}/friends/{friendId}")
+    @ResponseStatus(HttpStatus.OK)
+    public User deleteFriend(@PathVariable Long userId, @PathVariable Long friendId) {
+        return userService.deleteFriend(userId, friendId);
     }
 
-    @GetMapping("/{id}/friends")
-    public List<User> getFriends(@PathVariable Long id) {
-        log.info("Получен запрос на получение списка друзей пользователя с id={}", id);
-        return userService.getFriends(id);
-    }
-
-    @GetMapping("/{id}/friends/common/{otherId}")
-    public List<User> getCommonFriends(@PathVariable Long id, @PathVariable Long otherId) {
-        log.info("Получен запрос на получение общих друзей пользователей {} и {}", id, otherId);
-        return userService.getCommonFriends(id, otherId);
-    }
-
-    @PutMapping("/{id}/friends/{friendId}/confirm")
-    public void confirmFriend(@PathVariable Long id, @PathVariable Long friendId) {
-        log.info("Получен запрос на подтверждение дружбы: пользователь {} подтверждает дружбу с {}", id, friendId);
-        userService.confirmFriend(id, friendId);
-    }
 }

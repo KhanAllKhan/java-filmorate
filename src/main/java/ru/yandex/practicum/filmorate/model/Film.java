@@ -1,38 +1,48 @@
 package ru.yandex.practicum.filmorate.model;
 
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.PositiveOrZero;
-import jakarta.validation.constraints.Size;
+import jakarta.validation.constraints.*;
 import lombok.Data;
-import ru.yandex.practicum.filmorate.validation.ValidReleaseDate;
 
 import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.Set;
 
+/**
+ * Film.
+ */
 @Data
 public class Film {
-    private Long id;
 
-    @NotNull(message = "Название не может быть пустым")
-    @Size(min = 1, message = "Название не может быть пустым")
-    private String name;
+    Long id;
 
-    @Size(max = 200, message = "Описание не может быть больше 200 символов")
-    private String description;
+    @NotNull(message = "Поле name не может быть пустым")
+    @NotBlank(message = "Поле name не может быть пустым")
+    String name;
+
+    @NotBlank
+    @Size(max = 200)
+    String description;
 
     @NotNull(message = "Дата релиза не может быть пустой")
-    @ValidReleaseDate(message = "Дата релиза не может быть раньше 28 декабря 1895 года")
-    private LocalDate releaseDate;
+    @Past
+    LocalDate releaseDate;
 
-    @PositiveOrZero(message = "Продолжительность фильма должна быть положительным числом")
-    private int duration;
+    @NotNull
+    @Positive
+    int duration;
 
-    private Set<Long> likes = new HashSet<>();
+    Set<Long> likes;
 
-    @NotNull(message = "Жанр не может быть пустым")
     private Set<Genre> genres = new HashSet<>();
 
-    @NotNull(message = "Рейтинг не должен быть пустым")
-    private MpaRating mpaRating;
+    @NotNull
+    private MpaRating mpa;
+
+    public int getLikesCount() {
+        if (likes == null || likes.isEmpty()) {
+            return 0;
+        }
+        return likes.size();
+    }
+
 }
