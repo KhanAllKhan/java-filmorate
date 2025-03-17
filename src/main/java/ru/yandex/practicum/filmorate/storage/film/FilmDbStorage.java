@@ -21,19 +21,32 @@ public class FilmDbStorage implements FilmStorage {
     @Override
     public Film create(Film film) {
         String sql = "INSERT INTO films (name, description, release_date, duration, mpa_rating) VALUES (?, ?, ?, ?, ?)";
-        jdbcTemplate.update(sql, film.getName(), film.getDescription(), film.getReleaseDate(), film.getDuration(), film.getMpaRating().name());
+        jdbcTemplate.update(sql,
+                film.getName(),
+                film.getDescription(),
+                film.getReleaseDate(),
+                film.getDuration(),
+                film.getMpaRating().getName());
         String queryId = "SELECT id FROM films WHERE name = ? AND release_date = ?";
         Long id = jdbcTemplate.queryForObject(queryId, Long.class, film.getName(), film.getReleaseDate());
         film.setId(id);
         return film;
     }
 
+
     @Override
     public Film update(Film film) {
         String sql = "UPDATE films SET name = ?, description = ?, release_date = ?, duration = ?, mpa_rating = ? WHERE id = ?";
-        jdbcTemplate.update(sql, film.getName(), film.getDescription(), film.getReleaseDate(), film.getDuration(), film.getMpaRating(), film.getId());
+        jdbcTemplate.update(sql,
+                film.getName(),
+                film.getDescription(),
+                film.getReleaseDate(),
+                film.getDuration(),
+                film.getMpaRating().getName(),
+                film.getId());
         return film;
     }
+
 
     @Override
     public List<Film> getAll() {
