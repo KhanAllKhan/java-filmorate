@@ -16,7 +16,3 @@ INSERT INTO friendship_status (id, name) VALUES
 (1, 'requested'),
 (2, 'confirmed'),
 (3, 'rejected');
-INSERT INTO friendship_status (id, name) VALUES
-(1, 'requested'),
-(2, 'confirmed'),
-(3, 'rejected');
