@@ -2,7 +2,10 @@ package ru.yandex.practicum.filmorate.controller;
 
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.UserService;
@@ -13,6 +16,7 @@ import java.util.*;
 @RequestMapping("/users")
 @AllArgsConstructor
 public class UserController {
+    private static final Logger log = LoggerFactory.getLogger(UserController.class);
     private final UserService userService;
 
     @GetMapping
@@ -34,9 +38,10 @@ public class UserController {
     }
 
     @PostMapping
-    @ResponseStatus(HttpStatus.OK)
-    public User addUser(@Valid @RequestBody User user) {
-        return userService.addUser(user);
+    public ResponseEntity<User> addUser(@Valid @RequestBody User user) {
+        log.info("Получен запрос на создание нового пользователя: {}", user);
+        User createdUser = userService.addUser(user);
+        return ResponseEntity.status(HttpStatus.CREATED).body(createdUser);
     }
 
     @PutMapping

@@ -1,4 +1,13 @@
+-- Удаляем таблицы, которые зависят от других таблиц, в первую очередь
+DROP TABLE IF EXISTS films_genre;
+DROP TABLE IF EXISTS likes;
+DROP TABLE IF EXISTS friends;
 
+-- Затем удаляем основные таблицы
+DROP TABLE IF EXISTS films;
+DROP TABLE IF EXISTS users;
+DROP TABLE IF EXISTS genres;
+DROP TABLE IF EXISTS ratingMPA;
 -- Создаем таблицы в правильном порядке
 CREATE TABLE IF NOT EXISTS genres (
     genre_id BIGINT PRIMARY KEY AUTO_INCREMENT,

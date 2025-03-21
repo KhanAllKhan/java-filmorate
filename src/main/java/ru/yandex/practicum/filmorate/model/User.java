@@ -24,8 +24,7 @@ public class User {
     @NotBlank(message = "Поле login не может быть пустым")
     String login;
 
-    @NotNull(message = "Поле name не может быть пустым")
-    @NotBlank(message = "Поле name не может быть пустым")
+
     String name;
 
     @NotNull(message = "Поле дня рождения не может быть пустым")
