@@ -16,18 +16,12 @@ import java.util.stream.Collectors;
 @Slf4j
 @Repository
 public class UserDbStorage extends BaseRepository<User> implements UserStorage {
-    private static final String GET_ALL_USERS = "SELECT * FROM users;";
-
-    private static final String ADD_USER = "INSERT INTO users(name, login, email, birthday) " +
-            "VALUES (?, ?, ?, ?);";
-    private static final String UPDATE_USER = "UPDATE users SET name = ?, login = ?, email = ?, birthday = ? " +
-            "WHERE id = ?";
-    private static final String GET_USER_BY_ID = "SELECT * FROM users WHERE id = ?;";
-    private static final String ADD_FRIENDS = "INSERT INTO friends(user_id, friend_id) " +
-            "VALUES (?, ?);";
-
-    private static final String DELETE_FRIEND = "DELETE FROM friends WHERE user_id = ? AND friend_id = ?;";
-
+    private static final String GET_ALL_USERS = "SELECT * FROM users";
+    private static final String ADD_USER = "INSERT INTO users(name, login, email, birthday) VALUES (?, ?, ?, ?)";
+    private static final String UPDATE_USER = "UPDATE users SET name = ?, login = ?, email = ?, birthday = ? WHERE id = ?";
+    private static final String GET_USER_BY_ID = "SELECT * FROM users WHERE id = ?";
+    private static final String ADD_FRIENDS = "INSERT INTO friends(user_id, friend_id) VALUES (?, ?)";
+    private static final String DELETE_FRIEND = "DELETE FROM friends WHERE user_id = ? AND friend_id = ?";
 
     public UserDbStorage(JdbcTemplate jdbc, RowMapper<User> mapper) {
         super(jdbc, mapper, User.class);
@@ -36,9 +30,7 @@ public class UserDbStorage extends BaseRepository<User> implements UserStorage {
     public List<User> getAllUsers() {
         log.info("Вывод всех пользователей");
         return findMany(GET_ALL_USERS).stream()
-                .peek(user -> {
-                    user.setFriends(loadFriends(user.getId()));
-                })
+                .peek(user -> user.setFriends(loadFriends(user.getId())))
                 .collect(Collectors.toList());
     }
 
@@ -56,7 +48,6 @@ public class UserDbStorage extends BaseRepository<User> implements UserStorage {
         Set<Long> friends1 = user1.getFriends();
         Set<Long> friends2 = user2.getFriends();
         friends1.retainAll(friends2);
-
         return friends1.stream()
                 .map(this::getUserById)
                 .collect(Collectors.toList());
@@ -70,9 +61,7 @@ public class UserDbStorage extends BaseRepository<User> implements UserStorage {
                 user.getEmail(),
                 Timestamp.valueOf(user.getBirthday().atStartOfDay())
         );
-
         log.info("Был создан пользователь с id: " + id);
-
         user.setId(id);
         return user;
     }
@@ -87,11 +76,9 @@ public class UserDbStorage extends BaseRepository<User> implements UserStorage {
                     Timestamp.valueOf(newUser.getBirthday().atStartOfDay()),
                     newUser.getId()
             );
-
             if (rowsUpdated == 0) {
                 throw new NotFoundException("Пользователя для обновления с id: " + newUser.getId() + " не найдено");
             }
-
             if (!newUser.getFriends().isEmpty()) {
                 for (Long friendId : newUser.getFriends()) {
                     update(
@@ -101,35 +88,25 @@ public class UserDbStorage extends BaseRepository<User> implements UserStorage {
                     );
                 }
             }
-
             log.info("Была обновлена информация о пользователе с id: " + newUser.getId() + ". Его информация: " + getUserById(newUser.getId()));
-
         } catch (ConditionsNotMetException ex) {
             log.error("Ошибка при обновлении пользователя с id {}: {}", newUser.getId(), ex.getMessage());
             throw new ConditionsNotMetException("Не удалось обновить данные пользователя");
         }
-
         Optional<User> user = findOne(GET_USER_BY_ID, newUser.getId());
-
         log.info("id: " + user.get().getId() + " get: " + user.get().getFriends());
-
         if (user.isPresent()) {
             return user.get();
         }
-
         throw new NotFoundException("Пользователь с id: " + newUser.getId() + " не найден");
-
     }
 
     public User removeFriend(Long userId, Long friendId) {
         boolean deleted = delete(DELETE_FRIEND, userId, friendId);
-
         if (deleted) {
             return getUserById(userId);
         }
-
         log.info("У пользователя с id: " + userId + " не получилось удалить друга с id: " + friendId);
-
         return getUserById(userId);
     }
 
@@ -144,5 +121,4 @@ public class UserDbStorage extends BaseRepository<User> implements UserStorage {
         }
         throw new NotFoundException("Пользователя с id = " + userId + " не найдено");
     }
-
 }

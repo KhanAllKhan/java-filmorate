@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.UserService;
 
-import java.util.*;
+import java.util.Collection;
 
 @RestController
 @RequestMapping("/users")
@@ -36,12 +36,20 @@ public class UserController {
     @PostMapping
     @ResponseStatus(HttpStatus.OK)
     public User addUser(@Valid @RequestBody User user) {
+        // Если имя не задано, то подставляем логин в качестве имени
+        if (user.getName() == null || user.getName().trim().isEmpty()) {
+            user.setName(user.getLogin());
+        }
         return userService.addUser(user);
     }
 
     @PutMapping
     @ResponseStatus(HttpStatus.OK)
     public User updateUser(@Valid @RequestBody User newUser) {
+        // Аналогичная проверка для обновления, если требуется
+        if (newUser.getName() == null || newUser.getName().trim().isEmpty()) {
+            newUser.setName(newUser.getLogin());
+        }
         return userService.updateUser(newUser);
     }
 
@@ -56,5 +64,4 @@ public class UserController {
     public User deleteFriend(@PathVariable Long userId, @PathVariable Long friendId) {
         return userService.deleteFriend(userId, friendId);
     }
-
 }

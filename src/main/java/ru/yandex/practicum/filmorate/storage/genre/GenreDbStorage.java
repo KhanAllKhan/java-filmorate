@@ -15,9 +15,9 @@ import java.util.TreeSet;
 @Slf4j
 @Repository
 public class GenreDbStorage extends BaseRepository<Genre> implements GenreStorage {
-    private static final String GET_ALL_GENRES = "SELECT * FROM genres;";
+    private static final String GET_ALL_GENRES = "SELECT * FROM genres";
 
-    private static final String GET_GENRE = "SELECT * FROM genres WHERE genre_id = ?;";
+    private static final String GET_GENRE = "SELECT * FROM genres WHERE genre_id = ?";
 
     public GenreDbStorage(JdbcTemplate jdbc, RowMapper<Genre> mapper) {
         super(jdbc, mapper, Genre.class);
