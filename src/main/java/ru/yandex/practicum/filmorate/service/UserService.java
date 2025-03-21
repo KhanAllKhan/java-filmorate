@@ -60,8 +60,6 @@ public class UserService {
         User friend = getUserById(friendId);
         friend.getFriends().remove(userId);
 
-        log.info("Пользователи с id = " + userId + " и id = " + friendId + " больше не являются друзьями");
-
         userStorage.removeFriend(userId, friendId);
 
         userStorage.updateUser(user);
