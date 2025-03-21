@@ -59,7 +59,7 @@ public class BaseRepository<T> {
         try {
             return jdbc.update(query, params);
         } catch (ConditionsNotMetException ex) {
-            log.error( ex.getMessage());
+            log.error(ex.getMessage());
             throw new ConditionsNotMetException("Ошибка при обновлении данных");
         }
     }
