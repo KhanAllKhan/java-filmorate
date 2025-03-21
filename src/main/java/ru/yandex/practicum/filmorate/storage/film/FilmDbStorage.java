@@ -23,46 +23,48 @@ public class FilmDbStorage extends BaseRepository<Film> implements FilmStorage {
     private GenreStorage genreStorage;
 
     private static final String GET_ALL_FILMS = """
-        SELECT f.id,
-               f.title,
-               f.description,
-               f.duration,
-               f.release_date,
-               f.ratingMPA_id
-        FROM films AS f
-        JOIN ratingMPA AS rm ON rm.ratingMPA_id = f.ratingMPA_id
-        """;
+    SELECT f.id,
+        f.title,
+        f.description,
+        f.duration,
+        f.release_date,
+        f.ratingMPA_id
+    FROM films AS f
+    JOIN ratingMPA AS rm ON rm.ratingMPA_id = f.ratingMPA_id;
+""";
 
     private static final String GET_FILM_BY_ID = """
-        SELECT f.id,
-               f.title,
-               f.description,
-               f.duration,
-               f.release_date,
-               f.ratingMPA_id,
-               COUNT(l.user_id) AS user_id
-        FROM films AS f
-        LEFT OUTER JOIN likes AS l ON l.film_id = f.id
-        WHERE f.id = ?
-        GROUP BY f.id, f.title, f.description, f.duration, f.release_date, f.ratingMPA_id
-        """;
+    SELECT f.id,
+        f.title,
+        f.description,
+        f.duration,
+        f.release_date,
+        f.ratingMPA_id,
+        COUNT(l.user_id) AS user_id
+    FROM films AS f
+    LEFT OUTER JOIN likes AS l ON l.film_id = f.id
+    WHERE f.id = ?
+    GROUP BY f.id, f.title, f.description, f.duration, f.release_date, f.ratingMPA_id;
+""";
 
     private static final String ADD_FILM = """
-        INSERT INTO films(title, description, duration, release_date, ratingMPA_id)
-        VALUES (?, ?, ?, ?, ?)
-        """;
+    INSERT INTO films(title, description, duration, release_date, ratingMPA_id)
+    VALUES (?, ?, ?, ?, ?);
+""";
 
     private static final String ADD_GENRE = """
-        INSERT INTO films_genre(film_id, genre_id)
-        VALUES (?, ?)
-        """;
+    INSERT INTO films_genre(film_id, genre_id)
+    VALUES (?, ?);
+""";
 
     private static final String DELETE_GENRE = """
-        DELETE FROM films_genre
-        WHERE film_id = ?
-        """;
+    DELETE FROM films_genre
+    WHERE film_id = ?;
+""";
+    private static final String UPDATE_FILM = "UPDATE films SET title = ?, description = ?, duration = ?, " +
+            "release_date = ?, ratingMPA_id = ?" +
+            "WHERE id = ?;";
 
-    private static final String UPDATE_FILM = "UPDATE films SET title = ?, description = ?, duration = ?, release_date = ?, ratingMPA_id = ? WHERE id = ?";
 
     public FilmDbStorage(JdbcTemplate jdbc, RowMapper<Film> mapper) {
         super(jdbc, mapper, Film.class);
@@ -171,7 +173,9 @@ public class FilmDbStorage extends BaseRepository<Film> implements FilmStorage {
         }
 
         log.info("Был создан фильм с id: " + id + " его информация: " + getFilmById(id));
+
         film.setId(id);
+
         return film;
     }
 
@@ -208,11 +212,12 @@ public class FilmDbStorage extends BaseRepository<Film> implements FilmStorage {
         }
 
         log.info("Была обновлена информация о фильме с id: " + newFilm.getId());
+
         return newFilm;
     }
 
     public void addLike(Long filmId, Long userId) {
-        String sql = "INSERT INTO likes(user_id, film_id) VALUES (?, ?)";
+        String sql = "INSERT INTO likes(user_id, film_id) VALUES (?, ?);";
         int changedRows = jdbc.update(sql, userId, filmId);
         if (changedRows > 0) {
             log.info("Лайк успешно добавлен: user_id = " + userId + ", film_id = " + filmId);
