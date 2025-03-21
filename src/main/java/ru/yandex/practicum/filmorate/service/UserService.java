@@ -30,9 +30,6 @@ public class UserService {
     }
 
     public User addUser(User user) {
-        if (user.getName() == null || user.getName().isBlank()) {
-            user.setName(user.getLogin()); // Автоматически заполняем name значением login
-        }
         return userStorage.addUser(user);
     }
 
@@ -62,6 +59,8 @@ public class UserService {
 
         User friend = getUserById(friendId);
         friend.getFriends().remove(userId);
+
+        log.info("Пользователи с id = " + userId + " и id = " + friendId + " больше не являются друзьями");
 
         userStorage.removeFriend(userId, friendId);
 
