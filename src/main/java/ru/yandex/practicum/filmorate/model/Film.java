@@ -7,12 +7,8 @@ import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.Set;
 
-/**
- * Film.
- */
 @Data
 public class Film {
-
     Long id;
 
     @NotNull(message = "Поле name не может быть пустым")
@@ -35,8 +31,15 @@ public class Film {
 
     private Set<Genre> genres = new HashSet<>();
 
+    private MpaRating mpa; // Убрали аннотацию @NotNull
 
-    private MpaRating mpa;
+    public MpaRating getMpa() {
+        return mpa == null ? new MpaRating(1L, "G") : mpa; // Значение по умолчанию: id=1, name="G"
+    }
+
+    public void setMpa(MpaRating mpa) {
+        this.mpa = mpa;
+    }
 
     public int getLikesCount() {
         if (likes == null || likes.isEmpty()) {
