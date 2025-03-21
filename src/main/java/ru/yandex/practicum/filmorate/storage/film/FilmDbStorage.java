@@ -37,7 +37,7 @@ public class FilmDbStorage implements FilmStorage {
         Long id = jdbcTemplate.queryForObject(queryId, Long.class, film.getName(), film.getReleaseDate());
         film.setId(id);
 
-        // Сохранение жанров
+
         saveGenres(film);
         return film;
     }
