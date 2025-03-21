@@ -1,8 +1,7 @@
--- Добавление пользователей
 INSERT INTO users (name, login, email, birthday) VALUES
 ('Jzz', 'jzz123', 'jzz@example.com', '1992-12-01 00:00:00'),
 ('kll', 'kll456', 'kll@example.com', '1991-11-15 00:00:00'),
-('KZ', 'KZ', 'Kz@example.com', '1999-09-20 00:00:00');
+('KZ', 'KZ', 'kz@example.com', '1999-09-20 00:00:00');
 
 INSERT INTO ratingMPA (name) VALUES
 ('G'),

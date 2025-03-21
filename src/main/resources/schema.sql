@@ -1,5 +1,5 @@
 
-
+-- Создаем таблицы в правильном порядке
 CREATE TABLE IF NOT EXISTS genres (
     genre_id BIGINT PRIMARY KEY AUTO_INCREMENT,
     name VARCHAR(255) NOT NULL
@@ -10,25 +10,22 @@ CREATE TABLE IF NOT EXISTS ratingMPA (
     name VARCHAR(255) NOT NULL
 );
 
--- Таблица пользователей
 CREATE TABLE IF NOT EXISTS users (
     id BIGINT PRIMARY KEY AUTO_INCREMENT,
     name VARCHAR(255),
     login VARCHAR(255) NOT NULL,
-    email VARCHAR(255) UNIQUE NOT NULL,
+    email VARCHAR(255) UNIQUE NOT NULL, -- Уникальное поле
     birthday TIMESTAMP NOT NULL
 );
 
--- Таблица друзей (связь "один ко многим" с users)
 CREATE TABLE IF NOT EXISTS friends (
     id BIGINT PRIMARY KEY AUTO_INCREMENT,
     user_id BIGINT NOT NULL,
     friend_id BIGINT NOT NULL,
-    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE, -- Связь с таблицей users
-    FOREIGN KEY (friend_id) REFERENCES users(id) ON DELETE CASCADE -- Связь с таблицей users
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (friend_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
--- Таблица фильмов
 CREATE TABLE IF NOT EXISTS films (
     id BIGINT PRIMARY KEY AUTO_INCREMENT,
     title VARCHAR(255) NOT NULL,
@@ -39,13 +36,12 @@ CREATE TABLE IF NOT EXISTS films (
     FOREIGN KEY (ratingMPA_id) REFERENCES ratingMPA(ratingMPA_id) ON DELETE CASCADE
 );
 
--- Таблица лайков (связь "один ко многим" с users и films)
 CREATE TABLE IF NOT EXISTS likes (
     id BIGINT PRIMARY KEY AUTO_INCREMENT,
     user_id BIGINT,
     film_id BIGINT,
-    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE, -- Связь с таблицей users
-    FOREIGN KEY (film_id) REFERENCES films(id) ON DELETE CASCADE  -- Связь с таблицей films
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (film_id) REFERENCES films(id) ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS films_genre (

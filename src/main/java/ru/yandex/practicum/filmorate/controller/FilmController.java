@@ -19,12 +19,6 @@ import java.util.List;
 public class FilmController {
     private final FilmService filmService;
 
-    @GetMapping("/{filmId}")
-    @ResponseStatus(HttpStatus.OK)
-    public Film getFilm(@PathVariable Long filmId) {
-        return filmService.getFilm(filmId);
-    }
-
     @GetMapping
     public ResponseEntity<Collection<Film>> getAllFilms() {
         log.info("Получен запрос на получение всех фильмов");
