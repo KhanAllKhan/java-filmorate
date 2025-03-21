@@ -11,14 +11,13 @@ INSERT INTO ratingMPA (name) VALUES
 ('NC-17');
 
 INSERT INTO genres (name) VALUES
+('Фэнтези'),
+('Фантастика'),
+('Аниме'),
 ('Комедия'),
-('Драма'),
-('Мультфильм'),
-('Триллер'),
-('Документальный'),
+('Вестерн'),
 ('Боевик');
 
--- Добавление фильмов
 INSERT INTO films (title, description, duration, ratingMPA_id, release_date) VALUES
 ('Inception', 'A mind-bending thriller', 148, 3, '2010-07-16 00:00:00'),
 ('The Matrix', 'A sci-fi classic', 136, 4, '1999-03-31 00:00:00');
@@ -32,7 +31,6 @@ INSERT INTO friends (user_id, friend_id) VALUES
 (2, 3),
 (3, 2);
 
--- Добавление лайков
 INSERT INTO likes (user_id, film_id) VALUES
 (1, 1),
 (2, 1),
