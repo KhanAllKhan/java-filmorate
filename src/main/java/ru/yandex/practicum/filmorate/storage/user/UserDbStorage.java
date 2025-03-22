@@ -79,6 +79,7 @@ public class UserDbStorage extends BaseRepository<User> implements UserStorage {
 
     public User updateUser(User newUser) {
         try {
+            // Обновляем основную информацию о пользователе
             int rowsUpdated = update(
                     UPDATE_USER,
                     newUser.getName(),
@@ -92,6 +93,7 @@ public class UserDbStorage extends BaseRepository<User> implements UserStorage {
                 throw new NotFoundException("Пользователя для обновления с id: " + newUser.getId() + " не найдено");
             }
 
+            // Обновляем список друзей, если он не пуст
             if (!newUser.getFriends().isEmpty()) {
                 for (Long friendId : newUser.getFriends()) {
                     update(
@@ -102,23 +104,20 @@ public class UserDbStorage extends BaseRepository<User> implements UserStorage {
                 }
             }
 
-            log.info("Была обновлена информация о пользователе с id: " + newUser.getId() + ". Его информация: " + getUserById(newUser.getId()));
+            log.info("Была обновлена информация о пользователе с id: {}. Его информация: {}", newUser.getId(), getUserById(newUser.getId()));
 
         } catch (ConditionsNotMetException ex) {
             log.error("Ошибка при обновлении пользователя с id {}: {}", newUser.getId(), ex.getMessage());
             throw new ConditionsNotMetException("Не удалось обновить данные пользователя");
         }
 
-        Optional<User> user = findOne(GET_USER_BY_ID, newUser.getId());
-
-        log.info("id: " + user.get().getId() + " get: " + user.get().getFriends());
-
-        if (user.isPresent()) {
-            return user.get();
-        }
-
-        throw new NotFoundException("Пользователь с id: " + newUser.getId() + " не найден");
-
+        return findOne(GET_USER_BY_ID, newUser.getId())
+                .map(user -> {
+                    user.setFriends(loadFriends(user.getId())); // Загружаем друзей
+                    log.info("User с id: {} имеет список друзей: {}", user.getId(), user.getFriends());
+                    return user;
+                })
+                .orElseThrow(() -> new NotFoundException("Пользователь с id: " + newUser.getId() + " не найден"));
     }
 
     public User removeFriend(Long userId, Long friendId) {
@@ -134,15 +133,14 @@ public class UserDbStorage extends BaseRepository<User> implements UserStorage {
     }
 
     public User getUserById(Long userId) {
-        log.info("Вывод пользователя с id: " + userId);
-        Optional<User> user = findOne(GET_USER_BY_ID, userId);
-        if (user.isPresent()) {
-            User updatedUser = user.get();
-            updatedUser.setFriends(loadFriends(user.get().getId()));
-            log.info("User с id: " + updatedUser.getId() + " имеет список друзей: " + updatedUser.getFriends());
-            return updatedUser;
-        }
-        throw new NotFoundException("Пользователя с id = " + userId + " не найдено");
+        log.info("Вывод пользователя с id: {}", userId);
+        return findOne(GET_USER_BY_ID, userId)
+                .map(user -> {
+                    user.setFriends(loadFriends(user.getId()));
+                    log.info("User с id: {} имеет список друзей: {}", user.getId(), user.getFriends());
+                    return user;
+                })
+                .orElseThrow(() -> new NotFoundException("Пользователя с id = " + userId + " не найдено"));
     }
 
 }

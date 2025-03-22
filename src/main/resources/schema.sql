@@ -1,14 +1,12 @@
--- Удаляем таблицы, которые зависят от других таблиц, в первую очередь
 DROP TABLE IF EXISTS films_genre;
 DROP TABLE IF EXISTS likes;
 DROP TABLE IF EXISTS friends;
 
--- Затем удаляем основные таблицы
 DROP TABLE IF EXISTS films;
 DROP TABLE IF EXISTS users;
 DROP TABLE IF EXISTS genres;
 DROP TABLE IF EXISTS ratingMPA;
--- Создаем таблицы в правильном порядке
+
 CREATE TABLE IF NOT EXISTS genres (
     genre_id BIGINT PRIMARY KEY AUTO_INCREMENT,
     name VARCHAR(255) NOT NULL
@@ -28,9 +26,9 @@ CREATE TABLE IF NOT EXISTS users (
 );
 
 CREATE TABLE IF NOT EXISTS friends (
-    id BIGINT PRIMARY KEY AUTO_INCREMENT,
-    user_id BIGINT NOT NULL,
-    friend_id BIGINT NOT NULL,
+    user_id BIGINT,
+    friend_id BIGINT,
+    PRIMARY KEY (user_id, friend_id), -- Составной первичный ключ
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
     FOREIGN KEY (friend_id) REFERENCES users(id) ON DELETE CASCADE
 );
@@ -46,17 +44,17 @@ CREATE TABLE IF NOT EXISTS films (
 );
 
 CREATE TABLE IF NOT EXISTS likes (
-    id BIGINT PRIMARY KEY AUTO_INCREMENT,
     user_id BIGINT,
     film_id BIGINT,
+    PRIMARY KEY (user_id, film_id), -- Составной первичный ключ
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
     FOREIGN KEY (film_id) REFERENCES films(id) ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS films_genre (
-    id BIGINT PRIMARY KEY AUTO_INCREMENT,
     film_id BIGINT,
     genre_id BIGINT,
+    PRIMARY KEY (film_id, genre_id), -- Составной первичный ключ
     FOREIGN KEY (film_id) REFERENCES films(id) ON DELETE CASCADE,
     FOREIGN KEY (genre_id) REFERENCES genres(genre_id) ON DELETE CASCADE
 );
