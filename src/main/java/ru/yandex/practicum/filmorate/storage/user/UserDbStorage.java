@@ -141,6 +141,7 @@ public class UserDbStorage extends BaseRepository<User> implements UserStorage {
         usersCache.put(userId, user);
         return user;
     }
+
     //для кеша
     private final Map<Long, User> usersCache = new HashMap<>();
 }
