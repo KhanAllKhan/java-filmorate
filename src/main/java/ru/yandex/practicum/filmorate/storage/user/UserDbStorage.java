@@ -43,7 +43,14 @@ public class UserDbStorage extends BaseRepository<User> implements UserStorage {
     @Override
     public List<User> getAllUsers() {
         log.info("Запрос всех пользователей с друзьями");
-        return jdbc.query(GET_ALL_USERS, this::mapUserWithFriends);
+        usersCache.clear();
+        try {
+            List<User> users = jdbc.query(GET_ALL_USERS, this::mapUserWithFriends);
+            return new ArrayList<>(usersCache.values()); // Возвращаем уникальных пользователей из кеша
+        } catch (Exception e) {
+            log.error("Ошибка при получении пользователей", e);
+            throw new RuntimeException("Ошибка при получении пользователей", e);
+        }
     }
 
     @Override
@@ -112,33 +119,27 @@ public class UserDbStorage extends BaseRepository<User> implements UserStorage {
     private User mapUserWithFriends(ResultSet rs, int rowNum) throws SQLException {
         Long userId = rs.getLong("id");
 
-        // Если пользователь уже был обработан, возвращаем его
-        if (usersCache.containsKey(userId)) {
-            return usersCache.get(userId);
-        }
-
-        User user = new User();
-        user.setId(userId);
-        user.setName(rs.getString("name"));
-        user.setLogin(rs.getString("login"));
-        user.setEmail(rs.getString("email"));
-        user.setBirthday(rs.getTimestamp("birthday").toLocalDateTime().toLocalDate());
-
-        Set<Long> friends = new HashSet<>();
-        do {
-            Long friendId = rs.getLong("friend_id");
-            if (friendId != 0) {
-                friends.add(friendId);
+        User user = usersCache.computeIfAbsent(userId, id -> {
+            try {
+                User newUser = new User();
+                newUser.setId(id);
+                newUser.setName(rs.getString("name"));
+                newUser.setLogin(rs.getString("login"));
+                newUser.setEmail(rs.getString("email"));
+                newUser.setBirthday(rs.getTimestamp("birthday").toLocalDateTime().toLocalDate());
+                newUser.setFriends(new HashSet<>());
+                return newUser;
+            } catch (SQLException e) {
+                throw new RuntimeException(e);
             }
-        } while (rs.next() && rs.getLong("id") == userId);
+        });
 
-        // Откатываем ResultSet назад, если это не последняя запись
-        if (!rs.isAfterLast() && rs.getLong("id") != userId) {
-            rs.previous();
+
+        Long friendId = rs.getLong("friend_id");
+        if (friendId != 0) {
+            user.getFriends().add(friendId);
         }
 
-        user.setFriends(friends);
-        usersCache.put(userId, user);
         return user;
     }
 
