@@ -18,13 +18,13 @@ import java.util.stream.Collectors;
 @Repository
 public class UserDbStorage extends BaseRepository<User> implements UserStorage {
     private static final String GET_ALL_USERS = """
-            SELECT u.*, f.friend_id 
+            SELECT u.*, f.friend_id
             FROM users u
             LEFT JOIN friends f ON u.id = f.user_id
             """;
 
     private static final String GET_USER_WITH_FRIENDS = """
-            SELECT u.*, f.friend_id 
+            SELECT u.*, f.friend_id
             FROM users u
             LEFT JOIN friends f ON u.id = f.user_id
             WHERE u.id = ?
@@ -141,6 +141,6 @@ public class UserDbStorage extends BaseRepository<User> implements UserStorage {
         usersCache.put(userId, user);
         return user;
     }
-
+    //для кеша
     private final Map<Long, User> usersCache = new HashMap<>();
 }
