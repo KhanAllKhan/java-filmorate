@@ -5,10 +5,11 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.dal.BaseRepository;
-import ru.yandex.practicum.filmorate.exception.ConditionsNotMetException;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -16,52 +17,44 @@ import java.util.stream.Collectors;
 @Slf4j
 @Repository
 public class UserDbStorage extends BaseRepository<User> implements UserStorage {
-    private static final String GET_ALL_USERS = "SELECT * FROM users;";
+    private static final String GET_ALL_USERS = """
+            SELECT u.*, f.friend_id 
+            FROM users u
+            LEFT JOIN friends f ON u.id = f.user_id
+            """;
 
-    private static final String ADD_USER = "INSERT INTO users(name, login, email, birthday) " +
-            "VALUES (?, ?, ?, ?);";
-    private static final String UPDATE_USER = "UPDATE users SET name = ?, login = ?, email = ?, birthday = ? " +
-            "WHERE id = ?";
+    private static final String GET_USER_WITH_FRIENDS = """
+            SELECT u.*, f.friend_id 
+            FROM users u
+            LEFT JOIN friends f ON u.id = f.user_id
+            WHERE u.id = ?
+            """;
+
+    private static final String ADD_USER = "INSERT INTO users(name, login, email, birthday) VALUES (?, ?, ?, ?);";
+    private static final String UPDATE_USER = "UPDATE users SET name = ?, login = ?, email = ?, birthday = ? WHERE id = ?";
     private static final String GET_USER_BY_ID = "SELECT * FROM users WHERE id = ?;";
-    private static final String ADD_FRIENDS = "INSERT INTO friends(user_id, friend_id) " +
-            "VALUES (?, ?);";
-
+    private static final String ADD_FRIEND = "INSERT INTO friends(user_id, friend_id) VALUES (?, ?);";
     private static final String DELETE_FRIEND = "DELETE FROM friends WHERE user_id = ? AND friend_id = ?;";
-
 
     public UserDbStorage(JdbcTemplate jdbc, RowMapper<User> mapper) {
         super(jdbc, mapper, User.class);
     }
 
+    @Override
     public List<User> getAllUsers() {
-        log.info("Вывод всех пользователей");
-        return findMany(GET_ALL_USERS).stream()
-                .peek(user -> {
-                    user.setFriends(loadFriends(user.getId()));
-                })
-                .collect(Collectors.toList());
+        log.info("Запрос всех пользователей с друзьями");
+        return jdbc.query(GET_ALL_USERS, this::mapUserWithFriends);
     }
 
-    public Set<Long> loadFriends(Long userId) {
-        String sql = "SELECT friend_id FROM friends WHERE user_id = ?";
-        return new HashSet<>(jdbc.query(sql, new Object[]{userId}, (rs, rowNum) -> rs.getLong("friend_id")));
-    }
-
+    @Override
     public List<User> findCommonFriends(Long userId, Long friendId) {
-        log.info("Вывод общих друзей для userId: " + userId + " и friendId: " + friendId);
-        User user1 = this.getUserById(userId);
-        User user2 = this.getUserById(friendId);
-        log.info("Информация о user1: " + user1);
-        log.info("Информация о user2: " + user2);
-        Set<Long> friends1 = user1.getFriends();
-        Set<Long> friends2 = user2.getFriends();
-        friends1.retainAll(friends2);
-
-        return friends1.stream()
-                .map(this::getUserById)
-                .collect(Collectors.toList());
+        log.info("Поиск общих друзей для userId: {} и friendId: {}", userId, friendId);
+        Set<Long> commonFriends = new HashSet<>(getUserFriends(userId));
+        commonFriends.retainAll(getUserFriends(friendId));
+        return commonFriends.stream().map(this::getUserById).collect(Collectors.toList());
     }
 
+    @Override
     public User addUser(User user) {
         long id = insert(
                 ADD_USER,
@@ -70,77 +63,84 @@ public class UserDbStorage extends BaseRepository<User> implements UserStorage {
                 user.getEmail(),
                 Timestamp.valueOf(user.getBirthday().atStartOfDay())
         );
-
-        log.info("Был создан пользователь с id: " + id);
-
+        log.info("Создан пользователь с id: {}", id);
         user.setId(id);
         return user;
     }
 
+    @Override
     public User updateUser(User newUser) {
-        try {
-            // Обновляем основную информацию о пользователе
-            int rowsUpdated = update(
-                    UPDATE_USER,
-                    newUser.getName(),
-                    newUser.getLogin(),
-                    newUser.getEmail(),
-                    Timestamp.valueOf(newUser.getBirthday().atStartOfDay()),
-                    newUser.getId()
-            );
+        int rowsUpdated = update(
+                UPDATE_USER,
+                newUser.getName(),
+                newUser.getLogin(),
+                newUser.getEmail(),
+                Timestamp.valueOf(newUser.getBirthday().atStartOfDay()),
+                newUser.getId()
+        );
 
-            if (rowsUpdated == 0) {
-                throw new NotFoundException("Пользователя для обновления с id: " + newUser.getId() + " не найдено");
-            }
-
-            // Обновляем список друзей, если он не пуст
-            if (!newUser.getFriends().isEmpty()) {
-                for (Long friendId : newUser.getFriends()) {
-                    update(
-                            ADD_FRIENDS,
-                            newUser.getId(),
-                            friendId
-                    );
-                }
-            }
-
-            log.info("Была обновлена информация о пользователе с id: {}. Его информация: {}", newUser.getId(), getUserById(newUser.getId()));
-
-        } catch (ConditionsNotMetException ex) {
-            log.error("Ошибка при обновлении пользователя с id {}: {}", newUser.getId(), ex.getMessage());
-            throw new ConditionsNotMetException("Не удалось обновить данные пользователя");
+        if (rowsUpdated == 0) {
+            throw new NotFoundException("Пользователь с id: " + newUser.getId() + " не найден");
         }
 
-        return findOne(GET_USER_BY_ID, newUser.getId())
-                .map(user -> {
-                    user.setFriends(loadFriends(user.getId())); // Загружаем друзей
-                    log.info("User с id: {} имеет список друзей: {}", user.getId(), user.getFriends());
-                    return user;
-                })
-                .orElseThrow(() -> new NotFoundException("Пользователь с id: " + newUser.getId() + " не найден"));
+        log.info("Обновлена информация о пользователе с id: {}", newUser.getId());
+        return getUserById(newUser.getId());
     }
 
+    @Override
     public User removeFriend(Long userId, Long friendId) {
-        boolean deleted = delete(DELETE_FRIEND, userId, friendId);
-
-        if (deleted) {
-            return getUserById(userId);
+        int deleted = jdbc.update(DELETE_FRIEND, userId, friendId);
+        if (deleted == 0) {
+            log.warn("Не удалось удалить друга: userId={}, friendId={}", userId, friendId);
         }
-
-        log.info("У пользователя с id: " + userId + " не получилось удалить друга с id: " + friendId);
-
         return getUserById(userId);
     }
 
+    @Override
     public User getUserById(Long userId) {
-        log.info("Вывод пользователя с id: {}", userId);
-        return findOne(GET_USER_BY_ID, userId)
-                .map(user -> {
-                    user.setFriends(loadFriends(user.getId()));
-                    log.info("User с id: {} имеет список друзей: {}", user.getId(), user.getFriends());
-                    return user;
-                })
-                .orElseThrow(() -> new NotFoundException("Пользователя с id = " + userId + " не найдено"));
+        List<User> users = jdbc.query(GET_USER_WITH_FRIENDS, this::mapUserWithFriends, userId);
+        if (users.isEmpty()) {
+            throw new NotFoundException("Пользователь с id=" + userId + " не найден");
+        }
+        return users.get(0);
     }
 
+    private Set<Long> getUserFriends(Long userId) {
+        return getUserById(userId).getFriends();
+    }
+
+    private User mapUserWithFriends(ResultSet rs, int rowNum) throws SQLException {
+        Long userId = rs.getLong("id");
+
+        // Если пользователь уже был обработан, возвращаем его
+        if (usersCache.containsKey(userId)) {
+            return usersCache.get(userId);
+        }
+
+        User user = new User();
+        user.setId(userId);
+        user.setName(rs.getString("name"));
+        user.setLogin(rs.getString("login"));
+        user.setEmail(rs.getString("email"));
+        user.setBirthday(rs.getTimestamp("birthday").toLocalDateTime().toLocalDate());
+
+        Set<Long> friends = new HashSet<>();
+        do {
+            Long friendId = rs.getLong("friend_id");
+            if (friendId != 0) {
+                friends.add(friendId);
+            }
+        } while (rs.next() && rs.getLong("id") == userId);
+
+        // Откатываем ResultSet назад, если это не последняя запись
+        if (!rs.isAfterLast() && rs.getLong("id") != userId) {
+            rs.previous();
+        }
+
+        user.setFriends(friends);
+        usersCache.put(userId, user);
+        return user;
+    }
+
+    private final Map<Long, User> usersCache = new HashMap<>();
 }
