@@ -22,62 +22,62 @@ public class FilmDbStorage extends BaseRepository<Film> implements FilmStorage {
 
     // SQL queries
     private static final String GET_ALL_FILMS = """
-        SELECT f.id, f.title, f.description, f.duration, 
-               f.release_date, f.ratingMPA_id
-        FROM films AS f
-        JOIN ratingMPA AS rm ON rm.ratingMPA_id = f.ratingMPA_id
-        """;
+            SELECT f.id, f.title, f.description, f.duration, 
+                   f.release_date, f.ratingMPA_id
+            FROM films AS f
+            JOIN ratingMPA AS rm ON rm.ratingMPA_id = f.ratingMPA_id
+            """;
 
     private static final String GET_FILM_BY_ID = """
-        SELECT f.id, f.title, f.description, f.duration, 
-               f.release_date, f.ratingMPA_id
-        FROM films AS f
-        WHERE f.id = ?
-        """;
+            SELECT f.id, f.title, f.description, f.duration, 
+                   f.release_date, f.ratingMPA_id
+            FROM films AS f
+            WHERE f.id = ?
+            """;
 
     private static final String ADD_FILM = """
-        INSERT INTO films(title, description, duration, release_date, ratingMPA_id)
-        VALUES (?, ?, ?, ?, ?)
-        """;
+            INSERT INTO films(title, description, duration, release_date, ratingMPA_id)
+            VALUES (?, ?, ?, ?, ?)
+            """;
 
     private static final String ADD_GENRE = """
-        INSERT INTO films_genre(film_id, genre_id)
-        VALUES (?, ?)
-        """;
+            INSERT INTO films_genre(film_id, genre_id)
+            VALUES (?, ?)
+            """;
 
     private static final String DELETE_GENRE = """
-        DELETE FROM films_genre
-        WHERE film_id = ?
-        """;
+            DELETE FROM films_genre
+            WHERE film_id = ?
+            """;
 
     private static final String UPDATE_FILM = """
-        UPDATE films 
-        SET title = ?, description = ?, duration = ?, 
-            release_date = ?, ratingMPA_id = ?
-        WHERE id = ?
-        """;
+            UPDATE films 
+            SET title = ?, description = ?, duration = ?, 
+                release_date = ?, ratingMPA_id = ?
+            WHERE id = ?
+            """;
 
     private static final String GET_LIKES = """
-        SELECT film_id, user_id FROM likes
-        """;
+            SELECT film_id, user_id FROM likes
+            """;
 
     private static final String GET_LIKES_FOR_FILM = """
-        SELECT user_id FROM likes WHERE film_id = ?
-        """;
+            SELECT user_id FROM likes WHERE film_id = ?
+            """;
 
     private static final String ADD_LIKE = """
-        INSERT INTO likes(user_id, film_id) VALUES (?, ?)
-        """;
+            INSERT INTO likes(user_id, film_id) VALUES (?, ?)
+            """;
 
     private static final String REMOVE_LIKE = """
-        DELETE FROM likes WHERE film_id = ? AND user_id = ?
-        """;
+            DELETE FROM likes WHERE film_id = ? AND user_id = ?
+            """;
 
     private static final String GET_GENRES_FOR_FILMS = """
-        SELECT fg.film_id, g.genre_id, g.name 
-        FROM films_genre fg 
-        JOIN genres g ON fg.genre_id = g.genre_id
-        """;
+            SELECT fg.film_id, g.genre_id, g.name 
+            FROM films_genre fg 
+            JOIN genres g ON fg.genre_id = g.genre_id
+            """;
 
     public FilmDbStorage(JdbcTemplate jdbc, RowMapper<Film> mapper, GenreStorage genreStorage) {
         super(jdbc, mapper, Film.class);
