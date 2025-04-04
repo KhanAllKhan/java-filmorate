@@ -1,82 +1,78 @@
 package ru.yandex.practicum.filmorate.service;
 
-import lombok.RequiredArgsConstructor;
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
-import java.util.List;
-import java.util.Set;
+import java.util.*;
+import java.util.stream.Collectors;
 
-@Service
-@RequiredArgsConstructor
 @Slf4j
+@Service
+@AllArgsConstructor
 public class UserService {
     private final UserStorage userStorage;
 
-    public User create(User user) {
-        return userStorage.create(user);
+    public Collection<User> getAllUsers() {
+        return userStorage.getAllUsers();
     }
 
-    public User update(User newUser) {
-        if (!userStorage.findById(newUser.getId()).isPresent()) {
-            throw new NotFoundException("Пользователь с id = " + newUser.getId() + " не найден");
+    public Collection<User> findFriends(Long userId) {
+        return getUserById(userId).getFriends().stream()
+                .map(this::getUserById)
+                .collect(Collectors.toList());
+    }
+
+    public Collection<User> findCommonFriends(Long userId, Long friendId) {
+        return userStorage.findCommonFriends(userId, friendId);
+    }
+
+    public User addUser(User user) {
+        if (user.getName() == null || user.getName().isBlank()) {
+            user.setName(user.getLogin());
         }
-        return userStorage.update(newUser);
+        return userStorage.addUser(user);
     }
 
-    public List<User> getAll() {
-        return userStorage.getAll();
-    }
-
-    public User findById(Long id) {
-        return userStorage.findById(id)
-                .orElseThrow(() -> new NotFoundException("Пользователь с id = " + id + " не найден"));
-    }
-
-    public void addFriend(Long userId, Long friendId) {
+    public User addFriend(Long userId, Long friendId) {
         if (userId.equals(friendId)) {
-            throw new IllegalArgumentException("Невозможно добавить самого себя в друзья");
+            throw new IllegalArgumentException("Нельзя добавить в друзья самого себя");
         }
 
+        userStorage.getUserById(userId);
+        userStorage.getUserById(friendId);
+
         User user = getUserById(userId);
-        User friend = getUserById(friendId);
         user.getFriends().add(friendId);
-        friend.getFriends().add(userId);
+
+        log.info("user: " + user.getFriends());
+
+        return userStorage.updateUser(user);
     }
 
-    public void removeFriend(Long userId, Long friendId) {
+    public User updateUser(User newUser) {
+        return userStorage.updateUser(newUser);
+    }
+
+    public User deleteFriend(Long userId, Long friendId) {
         User user = getUserById(userId);
-        User friend = getUserById(friendId);
         user.getFriends().remove(friendId);
+
+        User friend = getUserById(friendId);
         friend.getFriends().remove(userId);
-    }
 
-    public List<User> getFriends(Long userId) {
-        User user = getUserById(userId);
-        return user.getFriends().stream()
-                .map(this::getUserById)
-                .toList();
-    }
+        userStorage.removeFriend(userId, friendId);
 
-    public List<User> getCommonFriends(Long userId, Long otherUserId) {
-        User user = getUserById(userId);
-        User otherUser = getUserById(otherUserId);
-        Set<Long> commonFriendsIds = user.getFriends();
-        commonFriendsIds.retainAll(otherUser.getFriends());
-        return commonFriendsIds.stream()
-                .map(this::getUserById)
-                .toList();
-    }
+        userStorage.updateUser(user);
+        userStorage.updateUser(friend);
 
-    public void confirmFriend(Long userId, Long friendId) {
-        userStorage.confirmFriend(userId, friendId);
+        return user;
     }
 
     private User getUserById(Long userId) {
-        return userStorage.findById(userId)
-                .orElseThrow(() -> new NotFoundException("Пользователь с id = " + userId + " не найден"));
+        return userStorage.getUserById(userId);
     }
+
 }
